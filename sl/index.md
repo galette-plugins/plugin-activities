@@ -1,10 +1,10 @@
 ---
-title: Galette Activities
-description: Activities management
+title: Dejavnosti Galette
+description: Vodenje dejavnosti
 ---
 
-A [Galette](https://galette.eu) plugin to manage activities and the
-subscriptions members take on them.
+Vtičnik [Galette](https://galette.eu) za upravljanje dejavnosti in članov
+naročnin, ki jih izvajajo.
 
 Ta vtičnik je bil razvit za [Association
 l'Aphyllanthe](https://www.aphyllanthe.fr/). Ponuja:
@@ -20,12 +20,12 @@ l'Aphyllanthe](https://www.aphyllanthe.fr/). Ponuja:
   [users](https://lists.mailman3.com/postorius/lists/galette-users.mailman3.com/),
   [developers](https://lists.mailman3.com/postorius/lists/galette-devel.mailman3.com/)
 
-To use it you need a recent enough Galette — the required version is shown at
-the top of this page — and the plugin itself, either by:
+Če ga želite uporabljati, potrebujete dovolj najnovejšo Galette - zahtevana
+različica je prikazana na vrhu te strani - in sam vtičnik, bodisi z:
 
-* downloading it with the buttons at the top of this page,
-* or using the [source code from the
-  repository](https://github.com/galette-plugins/plugin-activities), which
-  requires some technical skills.
+* prenos z gumbi na vrhu te strani,
+* ali z uporabo [izvorne kode iz
+  repozitorija](https://github.com/galette-plugins/plugin-activities), kar
+  zahteva nekaj tehničnega znanja.
 
-See the [documentation](documentation.html) for the installation steps.
+Glejte [documentation](documentation.html) za korake namestitve.
