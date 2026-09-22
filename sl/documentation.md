@@ -1,6 +1,6 @@
 ---
 title: Dokumentacija
-description: Activities management
+description: Vodenje dejavnosti
 ---
 
 Ta vtičnik je bil razvit za [Association
@@ -13,10 +13,10 @@ l'Aphyllanthe](https://www.aphyllanthe.fr/). Ponuja:
 
 Najprej prenesite vtičnik:
 
-* [Get latest Activities
-  plugin!](https://github.com/galette-plugins/plugin-activities/releases/latest)
-* [Get Activities plugin nightly
-  build!](https://github.com/galette-plugins/plugin-activities/releases/tag/nightly)
+* [Pridobite najnovejši vtičnik za
+  dejavnosti!](https://github.com/galette-plugins/plugin-activities/releases/latest)
+* [Pridobite nočno gradnjo vtičnika za
+  dejavnosti!](https://github.com/galette-plugins/plugin-activities/releases/tag/nightly)
 
 Razširite prenesen arhiv v imenik Galette `plugins`. Na primer v Linuxu
 (zamenjajte `{url}` in `{version}` s pravilnimi vrednostmi):
