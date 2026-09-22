@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: Galette Activities plugin\n"
 "Report-Msgid-Bugs-To: translations@galette.eu\n"
 "POT-Creation-Date: 2024-09-10 22:29+0200\n"
-"PO-Revision-Date: 2026-09-03 10:59+0000\n"
+"PO-Revision-Date: 2026-09-22 09:36+0000\n"
 "Last-Translator: Johan Cwiklinski <trasher@x-tnd.be>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/galette/plugins-"
 "activities/fr/>\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.9\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 #: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:127
 msgid "Activities management"
@@ -221,7 +221,7 @@ msgstr "%1$s : modifier les informations"
 #: ../tempcache/activities.html.twig:198
 #, php-format
 msgid "%1$s: remove from database"
-msgstr "%1$s : supprimer de la base de données"
+msgstr "%1$s : supprimer de la base de données"
 
 #: ../tempcache/activities.html.twig:234
 msgid "No activity has been found"
