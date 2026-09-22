@@ -34,4 +34,4 @@ Pour fonctionner, ce plugin requiert des tables dans la base de données.
 Référez-vous [à l'interface de gestion des plugins de
 Galette](https://doc.galette.eu/en/master/plugins/index.html#plugins-managment).
 
-Et c'est fini; le plugin Activités est installé :)
+Et c'est fini ; le plugin Activités est installé :)
