@@ -52,4 +52,27 @@ class ActivitiesController extends GaletteRoutingTestCase
         $this->expectNoLogEntry();
         $this->expectFlashData(['error_detected' => ['No activity #' . $id . '.']]);
     }
+
+    /**
+     * Storage errors are reported, not thrown
+     */
+    public function testStoreError(): void
+    {
+        $this->logSuperAdmin();
+
+        $request = $this->createRequest('activities_storeactivity_add', [], 'POST')
+            ->withParsedBody(['name' => 'Climbing', 'id_group' => '999999', 'comment' => '']);
+        //on PostgreSQL, the failing query aborts the test transaction
+        $this->zdb->db->query('SAVEPOINT store_error', \Laminas\Db\Adapter\Adapter::QUERY_MODE_EXECUTE);
+        $test_response = $this->app->handle($request);
+        $this->zdb->db->query('ROLLBACK TO SAVEPOINT store_error', \Laminas\Db\Adapter\Adapter::QUERY_MODE_EXECUTE);
+        $this->assertSame(
+            ['Location' => [$this->routeparser->urlFor('activities_activity_add')]],
+            $test_response->getHeaders()
+        );
+        $this->expectLogEntry(\Analog::ERROR, 'Query error');
+        $this->expectLogEntry(\Analog::ERROR, 'Something went wrong');
+        $this->expectNoLogEntry();
+        $this->expectFlashData(['error_detected' => ['An error occurred while storing the activity.']]);
+    }
 }

@@ -223,7 +223,12 @@ class ActivitiesController extends AbstractPluginController
             if ($activity->getId() == '') {
                 $new = true;
             }
-            $store = $activity->store();
+            try {
+                $store = $activity->store();
+            } catch (\Throwable) {
+                //already logged by the entity
+                $store = false;
+            }
             if ($store === true) {
                 //member has been stored :)
                 if ($new) {

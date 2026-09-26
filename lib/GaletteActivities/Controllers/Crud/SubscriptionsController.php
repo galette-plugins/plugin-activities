@@ -334,7 +334,12 @@ class SubscriptionsController extends AbstractPluginController
             if ($subscription->getId() == '') {
                 $new = true;
             }
-            $store = $subscription->store();
+            try {
+                $store = $subscription->store();
+            } catch (\Throwable) {
+                //already logged by the entity
+                $store = false;
+            }
             if ($store === true) {
                 //member has been stored :)
                 if ($new) {
@@ -342,7 +347,7 @@ class SubscriptionsController extends AbstractPluginController
                 } else {
                     $success_detected[] = _T("Subscription has been modified.", "activities");
                 }
-            } elseif ($store === false) {
+            } else {
                 //something went wrong :'(
                 $errors = $subscription->getErrors();
                 if (count($errors)) {
