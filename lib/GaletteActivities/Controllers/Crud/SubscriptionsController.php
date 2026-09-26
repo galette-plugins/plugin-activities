@@ -193,7 +193,7 @@ class SubscriptionsController extends AbstractPluginController
         $this->session->{$this->getFilterName($this->getDefaultFilterName())} = $filters;
 
         return $response
-            ->withStatus(301)
+            ->withStatus(303)
             ->withHeader(
                 'Location',
                 $this->routeparser->urlFor('activities_subscriptions')
@@ -312,7 +312,7 @@ class SubscriptionsController extends AbstractPluginController
                 'activities_subscriptions'
             );
             return $response
-                ->withStatus(301)
+                ->withStatus(303)
                 ->withHeader('Location', $redirect_url);
         }
 
@@ -392,10 +392,12 @@ class SubscriptionsController extends AbstractPluginController
         }
 
         if (count($error_detected) == 0 && $goto_list) {
-            $redirect_url = $this->routeparser->urlFor(
-                'activities_subscriptions',
-                ['activity' => (string)$subscription->getActivityId()]
-            );
+            //show subscriptions of the stored activity
+            $filter_name = $this->getFilterName($this->getDefaultFilterName());
+            $filters = $this->session->$filter_name ?? new SubscriptionsList();
+            $filters->activity_filter = $subscription->getActivityId();
+            $this->session->$filter_name = $filters;
+            $redirect_url = $this->routeparser->urlFor('activities_subscriptions');
         } else {
             //store entity in session
             $this->session->subscription = $subscription;
@@ -417,7 +419,7 @@ class SubscriptionsController extends AbstractPluginController
         }
 
         return $response
-            ->withStatus(301)
+            ->withStatus(303)
             ->withHeader('Location', $redirect_url);
     }
 

@@ -75,4 +75,23 @@ class ActivitiesController extends GaletteRoutingTestCase
         $this->expectNoLogEntry();
         $this->expectFlashData(['error_detected' => ['An error occurred while storing the activity.']]);
     }
+
+    /**
+     * Stored activities lead to the list
+     */
+    public function testStoreActivity(): void
+    {
+        $this->logSuperAdmin();
+
+        $request = $this->createRequest('activities_storeactivity_add', [], 'POST')
+            ->withParsedBody(['name' => 'Climbing', 'price' => '12,50', 'comment' => '']);
+        $test_response = $this->app->handle($request);
+        $this->assertSame(
+            ['Location' => [$this->routeparser->urlFor('activities_activities')]],
+            $test_response->getHeaders()
+        );
+        $this->assertSame(303, $test_response->getStatusCode());
+        $this->expectNoLogEntry();
+        $this->expectFlashData(['success_detected' => ['New activity has been successfully added.']]);
+    }
 }

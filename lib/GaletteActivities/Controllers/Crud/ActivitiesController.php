@@ -129,7 +129,7 @@ class ActivitiesController extends AbstractPluginController
         $this->session->$filter_name = $filters;
 
         return $response
-            ->withStatus(301)
+            ->withStatus(303)
             ->withHeader('Location', $this->routeparser->urlFor('activities_activities'));
     }
 
@@ -277,7 +277,7 @@ class ActivitiesController extends AbstractPluginController
         }
 
         return $response
-            ->withStatus(301)
+            ->withStatus(303)
             ->withHeader('Location', $redirect_url);
     }
 

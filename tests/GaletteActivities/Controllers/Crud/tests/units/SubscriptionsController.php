@@ -37,6 +37,15 @@ class SubscriptionsController extends GaletteRoutingTestCase
     }
 
     /**
+     * Get subscriptions list filters from session
+     */
+    private function getSubscriptionsFilters(): \GaletteActivities\Filters\SubscriptionsList
+    {
+        $controller = $this->container->get(\GaletteActivities\Controllers\Crud\SubscriptionsController::class);
+        return $this->session->{$controller->getFilterName($controller::getDefaultFilterName())};
+    }
+
+    /**
      * Post a new subscription
      *
      * @param int $activity Activity ID
@@ -120,9 +129,11 @@ class SubscriptionsController extends GaletteRoutingTestCase
             ['Location' => [$this->routeparser->urlFor('activities_subscriptions')]],
             $test_response->getHeaders()
         );
-        $this->assertSame(301, $test_response->getStatusCode());
+        $this->assertSame(303, $test_response->getStatusCode());
         $this->expectNoLogEntry();
         $this->expectFlashData(['success_detected' => [_T('New subscription has been successfully added.', 'activities')]]);
+        //list shows subscriptions of the stored activity
+        $this->assertSame($activity, $this->getSubscriptionsFilters()->activity_filter);
         $this->assertSame(1, $this->countSubscriptions($activity));
         $this->assertTrue($this->isInGroup($group->getId(), $member_two->id));
 
