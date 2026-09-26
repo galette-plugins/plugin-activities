@@ -13,6 +13,7 @@ namespace GaletteActivities\Entity;
 use ArrayObject;
 use Galette\Core\Db;
 use Galette\Entity\Adherent;
+use Galette\Entity\Group;
 use Galette\Entity\PaymentType;
 use Analog\Analog;
 use Galette\Helpers\EntityHelper;
@@ -38,6 +39,9 @@ class Subscription
     private ?Activity $activity = null;
     private int $id_member;
     private ?Adherent $member = null;
+    //activity and member as stored in database
+    private ?int $stored_activity = null;
+    private ?int $stored_member = null;
     private bool $paid = true;
     private ?float $payment_amount = null;
     private int $payment_method = PaymentType::OTHER;
@@ -105,6 +109,8 @@ class Subscription
         $this->id = (int)$r->id_subscription;
         $this->setActivity((int)$r->{Activity::PK});
         $this->setMember((int)$r->{Adherent::PK});
+        $this->stored_activity = $this->id_activity;
+        $this->stored_member = $this->id_member;
         $this->paid = (bool)$r->is_paid;
         if ($r->payment_amount !== null) {
             $this->payment_amount = (float)$r->payment_amount;
@@ -232,8 +238,18 @@ class Subscription
     {
         global $hist;
 
+        if ($this->isDuplicate()) {
+            //checked before any query: on PostgreSQL, a failing query aborts the whole transaction
+            $this->errors[] = _T('Subscription already exists for this member and activity', 'activities');
+            return false;
+        }
+
+        $transaction = false;
         try {
-            $this->zdb->connection->beginTransaction();
+            if (!$this->zdb->connection->inTransaction()) {
+                $this->zdb->connection->beginTransaction();
+                $transaction = true;
+            }
             $values = [
                 Activity::PK => $this->id_activity,
                 Adherent::PK => $this->id_member,
@@ -267,12 +283,6 @@ class Subscription
                         _T("Subscription added", "activities"),
                         $this->getActivity()->getName()
                     );
-
-                    //link member to activity group, if any
-                    $group = $this->activity->getGroup();
-                    if ($group !== null) {
-                        $group->addMember($this->member);
-                    }
                 } else {
                     $hist->add(_T("Fail to add new subscription.", "activities"));
                     throw new \Exception(
@@ -298,20 +308,70 @@ class Subscription
                 }
             }
 
-            $this->zdb->connection->commit();
+            //members join the activity group when they subscribe, or change activity; they never leave it
+            if ($this->id_activity !== $this->stored_activity || $this->id_member !== $this->stored_member) {
+                $this->joinActivityGroup();
+            }
+
+            if ($transaction) {
+                $this->zdb->connection->commit();
+            }
+            $this->stored_activity = $this->id_activity;
+            $this->stored_member = $this->id_member;
             return true;
         } catch (\OverflowException $e) {
-            $this->zdb->connection->rollBack();
+            if ($transaction) {
+                $this->zdb->connection->rollBack();
+            }
             $this->errors[] = _T('Subscription already exists for this member and activity', 'activities');
             return false;
         } catch (\Exception $e) {
-            $this->zdb->connection->rollBack();
+            if ($transaction) {
+                $this->zdb->connection->rollBack();
+            }
             Analog::log(
                 'Something went wrong :\'( | ' . $e->getMessage() . "\n"
                 . $e->getTraceAsString(),
                 Analog::ERROR
             );
             throw $e;
+        }
+    }
+
+    /**
+     * Does another subscription exist for the same member and activity?
+     */
+    private function isDuplicate(): bool
+    {
+        $select = $this->zdb->select($this->getTableName());
+        $select->where([
+            Activity::PK => $this->id_activity,
+            Adherent::PK => $this->id_member
+        ]);
+        if (!empty($this->id)) {
+            $select->where->notEqualTo(self::PK, $this->id);
+        }
+        return $this->zdb->execute($select)->count() > 0;
+    }
+
+    /**
+     * Add member to the activity group, if any and if not already in
+     */
+    private function joinActivityGroup(): void
+    {
+        $group = $this->getActivity()?->getGroup();
+        if ($group === null) {
+            return;
+        }
+
+        $select = $this->zdb->select(Group::GROUPSUSERS_TABLE);
+        $select->where([
+            Group::PK => $group->getId(),
+            Adherent::PK => $this->id_member
+        ]);
+        //checked before inserting: on PostgreSQL, a duplicate entry aborts the whole transaction
+        if ($this->zdb->execute($select)->count() === 0) {
+            $group->addMember($this->getMember());
         }
     }
 

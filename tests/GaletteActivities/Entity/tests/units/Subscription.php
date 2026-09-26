@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace GaletteActivities\tests\units;
 
 use Galette\Tests\GaletteTestCase;
+use GaletteActivities\tests\ActivitiesFixtures;
 
 /**
  * Subscription tests
@@ -19,6 +20,8 @@ use Galette\Tests\GaletteTestCase;
  */
 class Subscription extends GaletteTestCase
 {
+    use ActivitiesFixtures;
+
     protected int $seed = 20240817102541;
 
     /**
@@ -262,12 +265,6 @@ class Subscription extends GaletteTestCase
             ],
             $subscription->getErrors()
         );
-        $this->expectLogEntry(
-            \Analog::ERROR,
-            $this->zdb->isPostgres()
-                ? 'duplicate key value violates unique constraint "galette_activities_subscriptions_id_activity_id_adh_key"'
-                : sprintf('Duplicate entry \'%1$s-%2$s\' for key', $gactivity_id, $member_one->id)
-        );
     }
 
     /**
@@ -277,5 +274,97 @@ class Subscription extends GaletteTestCase
     {
         $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
         $this->assertFalse($subscription->load(999));
+    }
+
+    /**
+     * Check and store a subscription
+     *
+     * @param int                                     $activity     Activity ID
+     * @param int                                     $member       Member ID
+     * @param ?\GaletteActivities\Entity\Subscription $subscription Subscription to change, a new one if null
+     */
+    private function storeSubscription(
+        int $activity,
+        int $member,
+        ?\GaletteActivities\Entity\Subscription $subscription = null
+    ): \GaletteActivities\Entity\Subscription {
+        $subscription ??= new \GaletteActivities\Entity\Subscription($this->zdb);
+        $this->assertTrue($subscription->check([
+            'activity' => $activity,
+            'member' => $member,
+            'subscription_date' => date('Y-m-d'),
+            'end_date' => date('Y-m-d', strtotime('+1 year')),
+        ]));
+        $this->assertTrue($subscription->store());
+        return $subscription;
+    }
+
+    /**
+     * Members already in the activity group can subscribe
+     */
+    public function testStoreMemberAlreadyInGroup(): void
+    {
+        $member_one = $this->getMemberOne();
+        $group = $this->createGroup('Activity group', [], [$member_one]);
+        $activity = $this->insertActivity('Climbing', $group->getId());
+
+        $this->storeSubscription($activity, $member_one->id);
+        $this->assertSame(1, $this->countSubscriptions($activity));
+        $this->assertTrue($this->isInGroup($group->getId(), $member_one->id));
+    }
+
+    /**
+     * Duplicates are refused without breaking the transaction opened by the caller
+     */
+    public function testDuplicateInTransaction(): void
+    {
+        $member_one = $this->getMemberOne();
+        $activity = $this->insertActivity('Climbing');
+        $this->insertSubscription($activity, $member_one->id);
+
+        $this->zdb->connection->beginTransaction();
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
+        $this->assertTrue($subscription->check([
+            'activity' => $activity,
+            'member' => $member_one->id,
+            'subscription_date' => date('Y-m-d'),
+            'end_date' => date('Y-m-d', strtotime('+1 year')),
+        ]));
+        $this->assertFalse($subscription->store());
+        $this->assertSame(['Subscription already exists for this member and activity'], $subscription->getErrors());
+
+        //transaction is still usable
+        $this->insertActivity('Hiking');
+        $this->zdb->connection->commit();
+        $this->assertSame(1, $this->countSubscriptions($activity));
+    }
+
+    /**
+     * Members join the group of their new activity, and stay in the previous one
+     */
+    public function testChangeActivityJoinsGroup(): void
+    {
+        $member_one = $this->getMemberOne();
+        $climbing_group = $this->createGroup('Climbing group');
+        $hiking_group = $this->createGroup('Hiking group');
+        $climbing = $this->insertActivity('Climbing', $climbing_group->getId());
+        $hiking = $this->insertActivity('Hiking', $hiking_group->getId());
+
+        $subscription = $this->storeSubscription($climbing, $member_one->id);
+        $this->assertTrue($this->isInGroup($climbing_group->getId(), $member_one->id));
+        $this->assertFalse($this->isInGroup($hiking_group->getId(), $member_one->id));
+
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, (int)$subscription->getId());
+        $this->storeSubscription($hiking, $member_one->id, $subscription);
+        $this->assertTrue($this->isInGroup($hiking_group->getId(), $member_one->id));
+        $this->assertTrue($this->isInGroup($climbing_group->getId(), $member_one->id));
+        $this->assertSame(0, $this->countSubscriptions($climbing));
+
+        //storing again without changing activity does not join the group again
+        $this->zdb->execute($this->zdb->delete(\Galette\Entity\Group::GROUPSUSERS_TABLE));
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, (int)$subscription->getId());
+        $this->storeSubscription($hiking, $member_one->id, $subscription);
+        $this->assertFalse($this->isInGroup($hiking_group->getId(), $member_one->id));
+        $this->assertSame(1, $this->countSubscriptions($hiking));
     }
 }
