@@ -35,8 +35,8 @@ class Subscriptions
     public const int ORDERBY_MEMBER = 1;
     public const int ORDERBY_SUBSCRIPTIONDATE = 2;
     public const int ORDERBY_ENDDATE = 3;
-    public const int ORDERBY_PAID = 3;
     public const int ORDERBY_AMOUNT = 4;
+    public const int ORDERBY_PAID = 5;
 
     public const int FILTER_DC_PAID = 0;
     public const int FILTER_PAID = 1;
@@ -106,7 +106,8 @@ class Subscriptions
     private function buildSelect(?array $fields, bool $count = false): Select
     {
         try {
-            $fieldsList = ['*'];
+            $fieldsList = [Subscription::PK, Activity::PK, Adherent::PK, 'is_paid', 'payment_amount',
+                'payment_method', 'creation_date', 'subscription_date', 'end_date', 'comment'];
             if (is_array($fields) && count($fields)) {
                 $fieldsList = $fields;
             }
@@ -114,13 +115,16 @@ class Subscriptions
             $select = $this->zdb->select(ACTIVITIES_PREFIX . Subscription::TABLE, 's');
             $select->columns($fieldsList);
 
+            //joined tables are used for filtering and ordering only, their columns would override subscriptions ones
             $select->join(
                 ['a' => PREFIX_DB . Adherent::TABLE],
-                's.' . Adherent::PK . '= a.' . Adherent::PK
+                's.' . Adherent::PK . '= a.' . Adherent::PK,
+                []
             );
             $select->join(
                 ['ac' => PREFIX_DB . ACTIVITIES_PREFIX . Activity::TABLE],
-                's.' . Activity::PK . '= ac.' . Activity::PK
+                's.' . Activity::PK . '= ac.' . Activity::PK,
+                []
             );
 
             $this->buildWhereClause($select);
@@ -167,7 +171,7 @@ class Subscriptions
             $sumSelect->reset($sumSelect::ORDER);
             $sumSelect->columns(
                 [
-                    'sum' => new Expression('SUM(payment_amount)')
+                    'sum' => new Expression('SUM(s.payment_amount)')
                 ]
             );
 
@@ -194,10 +198,10 @@ class Subscriptions
         try {
             switch ($this->filters->paid_filter) {
                 case self::FILTER_PAID:
-                    $select->where('is_paid = true');
+                    $select->where(['s.is_paid' => $this->zdb->isPostgres() ? 'true' : 1]);
                     break;
                 case self::FILTER_NOT_PAID:
-                    $select->where('is_paid = false');
+                    $select->where(['s.is_paid' => $this->zdb->isPostgres() ? 'false' : 0]);
                     break;
                 case self::FILTER_DC_PAID:
                     //nothing to do here.
@@ -213,7 +217,7 @@ class Subscriptions
 
             if ($this->filters->payment_type_filter != -1) {
                 $select->where->equalTo(
-                    'payment_method',
+                    's.payment_method',
                     $this->filters->payment_type_filter
                 );
             }
@@ -230,11 +234,11 @@ class Subscriptions
                     $field = 's.creation_date';
                     break;
                 case SubscriptionsList::DATE_SUBSCRIPTION:
-                    $field = 'subscription_date';
+                    $field = 's.subscription_date';
                     break;
                 case SubscriptionsList::DATE_END:
                 default:
-                    $field = 'end_date';
+                    $field = 's.end_date';
                     break;
             }
 
@@ -255,7 +259,7 @@ class Subscriptions
             }
 
             if (count($this->filters->selected)) {
-                $select->where([Subscription::PK => $this->filters->selected]);
+                $select->where(['s.' . Subscription::PK => $this->filters->selected]);
             }
         } catch (\Exception $e) {
             Analog::log(
@@ -315,23 +319,23 @@ class Subscriptions
                 break;
             case self::ORDERBY_SUBSCRIPTIONDATE:
                 if ($this->canOrderBy('subscription_date', $fields)) {
-                    $order[] = 'subscription_date ' . $this->filters->getDirection();
+                    $order[] = 's.subscription_date ' . $this->filters->getDirection();
                 }
                 break;
 
             case self::ORDERBY_ENDDATE:
                 if ($this->canOrderBy('end_date', $fields)) {
-                    $order[] = 'end_date ' . $this->filters->getDirection();
+                    $order[] = 's.end_date ' . $this->filters->getDirection();
                 }
                 break;
             case self::ORDERBY_PAID:
-                if ($this->canOrderBy('id_paid', $fields)) {
-                    $order[] = 'is_paid ' . $this->filters->getDirection();
+                if ($this->canOrderBy('is_paid', $fields)) {
+                    $order[] = 's.is_paid ' . $this->filters->getDirection();
                 }
                 break;
             case self::ORDERBY_AMOUNT:
                 if ($this->canOrderBy('payment_amount', $fields)) {
-                    $order[] = 'payment_amount ' . $this->filters->getDirection();
+                    $order[] = 's.payment_amount ' . $this->filters->getDirection();
                 }
                 break;
         }

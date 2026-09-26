@@ -66,15 +66,16 @@ trait ActivitiesFixtures
     /**
      * Insert an activity
      *
-     * @param string   $name     Activity name
-     * @param int|null $id_group Group ID
+     * @param string              $name     Activity name
+     * @param int|null            $id_group Group ID
+     * @param array<string,mixed> $data     Values to override
      *
      * @return int Activity ID
      */
-    protected function insertActivity(string $name, ?int $id_group = null): int
+    protected function insertActivity(string $name, ?int $id_group = null, array $data = []): int
     {
         $insert = $this->zdb->insert(ACTIVITIES_PREFIX . Activity::TABLE);
-        $insert->values([
+        $insert->values($data + [
             'name'          => $name,
             'price'         => 10,
             Group::PK       => $id_group,
@@ -91,24 +92,31 @@ trait ActivitiesFixtures
     /**
      * Insert a subscription
      *
-     * @param int $activity Activity ID
-     * @param int $member   Member ID
+     * @param int                 $activity Activity ID
+     * @param int                 $member   Member ID
+     * @param array<string,mixed> $data     Values to override
      *
      * @return int Subscription ID
      */
-    protected function insertSubscription(int $activity, int $member): int
+    protected function insertSubscription(int $activity, int $member, array $data = []): int
     {
-        $insert = $this->zdb->insert(ACTIVITIES_PREFIX . Subscription::TABLE);
-        $insert->values([
+        $values = $data + [
             Activity::PK        => $activity,
             Adherent::PK        => $member,
-            'is_paid'           => $this->zdb->isPostgres() ? 'false' : 0,
+            'is_paid'           => false,
             'payment_method'    => 0,
             'creation_date'     => date('Y-m-d'),
             'subscription_date' => date('Y-m-d'),
             'end_date'          => date('Y-m-d', strtotime('+1 year')),
             'comment'           => '',
-        ]);
+        ];
+        if ($this->zdb->isPostgres()) {
+            $values['is_paid'] = $values['is_paid'] ? 'true' : 'false';
+        } else {
+            $values['is_paid'] = (int)$values['is_paid'];
+        }
+        $insert = $this->zdb->insert(ACTIVITIES_PREFIX . Subscription::TABLE);
+        $insert->values($values);
         $this->zdb->execute($insert);
 
         $select = $this->zdb->select(ACTIVITIES_PREFIX . Subscription::TABLE);
