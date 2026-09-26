@@ -82,7 +82,7 @@ $app->get(
 $app->post(
     '/subscription/add',
     [SubscriptionsController::class, 'doAdd']
-)->setName('activities_storesubscription_add');
+)->setName('activities_storesubscription_add')->add(Authenticate::class);
 
 $app->post(
     '/subscription/store',

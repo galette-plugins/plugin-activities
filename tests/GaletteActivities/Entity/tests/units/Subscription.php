@@ -266,7 +266,7 @@ class Subscription extends GaletteTestCase
             \Analog::ERROR,
             $this->zdb->isPostgres()
                 ? 'duplicate key value violates unique constraint "galette_activities_subscriptions_id_activity_id_adh_key"'
-                : "Duplicate entry '3-1' for key"
+                : sprintf('Duplicate entry \'%1$s-%2$s\' for key', $gactivity_id, $member_one->id)
         );
     }
 
