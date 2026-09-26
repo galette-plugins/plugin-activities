@@ -158,12 +158,14 @@ class Activity
 
         if (empty($values['name'])) {
             $this->errors[] = _T('Name is mandatory', 'activities');
+        } elseif (mb_strlen($values['name']) > 150) {
+            $this->errors[] = _T('Name is too long', 'activities');
         } else {
             $this->name = $values['name'];
         }
 
         if (isset($values['type']) && !empty($values['type'])) {
-            if (strlen($values['type']) > 3) {
+            if (mb_strlen($values['type']) > 3) {
                 $this->errors[] = _T('Type is too long', 'activities');
             } else {
                 $this->type = $values['type'];
@@ -172,10 +174,14 @@ class Activity
             $this->type = '';
         }
 
-        if (isset($values['price']) && !empty($values['price'])) {
-            $this->price = (float)$values['price'];
-        } else {
+        //accept comma as decimal separator
+        $price = strtr(trim((string)($values['price'] ?? '')), ',', '.');
+        if ($price === '') {
             $this->price = null;
+        } elseif (is_numeric($price)) {
+            $this->price = (float)$price;
+        } else {
+            $this->errors[] = _T('Price must be a number.', 'activities');
         }
 
         if (isset($values['id_group']) && !empty($values['id_group'])) {

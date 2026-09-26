@@ -147,4 +147,51 @@ class Activity extends GaletteTestCase
         $activity = new \GaletteActivities\Entity\Activity($this->zdb);
         $this->assertFalse($activity->load(999));
     }
+
+    /**
+     * Assert activity data is refused
+     *
+     * @param array<string,mixed> $data   Activity data
+     * @param array<string>       $errors Expected errors
+     */
+    private function expectInvalid(array $data, array $errors): void
+    {
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb);
+        $this->assertFalse($activity->check($data));
+        $this->assertSame($errors, $activity->getErrors());
+        $this->expectLogEntry(\Analog::ERROR, 'Error(s) checking activity before store');
+    }
+
+    /**
+     * Names are limited to database length, types counted in characters
+     */
+    public function testCheckLengths(): void
+    {
+        $this->expectInvalid(['name' => str_repeat('a', 151)], ['Name is too long']);
+
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb);
+        $this->assertTrue($activity->check(['name' => str_repeat('é', 150), 'type' => 'Éàü']));
+        $this->assertTrue($activity->store());
+        $this->assertTrue($activity->load((int)$activity->getId()));
+        $this->assertSame(str_repeat('é', 150), $activity->getName());
+        $this->assertSame('Éàü', $activity->getType());
+    }
+
+    /**
+     * Prices accept comma decimal separator and zero, and can be cleared
+     */
+    public function testCheckPrice(): void
+    {
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb);
+        $this->assertTrue($activity->check(['name' => 'Climbing', 'price' => '12,50']));
+        $this->assertSame(12.5, $activity->getPrice());
+
+        $this->assertTrue($activity->check(['name' => 'Climbing', 'price' => '0']));
+        $this->assertSame(0.0, $activity->getPrice());
+
+        $this->assertTrue($activity->check(['name' => 'Climbing', 'price' => '']));
+        $this->assertNull($activity->getPrice());
+
+        $this->expectInvalid(['name' => 'Climbing', 'price' => 'twelve'], ['Price must be a number.']);
+    }
 }

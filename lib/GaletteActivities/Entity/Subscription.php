@@ -172,6 +172,13 @@ class Subscription
             $this->errors[] = _T('Activity is mandatory', 'activities');
         } else {
             $this->setActivity((int)$values['activity']);
+            if ($this->activity?->getId() === null) {
+                $this->errors[] = sprintf(
+                    //TRANS: %1$s is the activity ID
+                    _T('No activity #%1$s.', 'activities'),
+                    (int)$values['activity']
+                );
+            }
         }
 
         //financial information
@@ -181,12 +188,24 @@ class Subscription
             $this->paid = false;
         }
 
-        if (isset($values['payment_amount']) && !empty($values['payment_amount'])) {
-            $this->payment_amount = (float)$values['payment_amount'];
-        } else {
-            if ($this->getActivity() && isset($values['save'])) {
-                $this->payment_amount = $this->getActivity()->getPrice();
+        $amount = null;
+        if (isset($values['payment_amount'])) {
+            //accept comma as decimal separator
+            $amount = strtr(trim((string)$values['payment_amount']), ',', '.');
+        }
+        if ($amount !== null && $amount !== '') {
+            if (is_numeric($amount)) {
+                $this->payment_amount = (float)$amount;
+            } else {
+                $this->errors[] = _T('Amount must be a number.', 'activities');
             }
+        } elseif ($amount === null || empty($this->id)) {
+            //new subscriptions default to activity price; existing ones can be cleared
+            if (isset($values['save']) && $this->activity !== null) {
+                $this->payment_amount = $this->activity->getPrice();
+            }
+        } else {
+            $this->payment_amount = null;
         }
 
         if (isset($values['creation_date']) && !empty($values['creation_date'])) {
@@ -199,6 +218,11 @@ class Subscription
 
         if (!isset($values['member']) || empty($values['member'])) {
             $this->errors[] = _T('Member is mandatory', 'activities');
+        } elseif (!$this->memberExists((int)$values['member'])) {
+            $this->errors[] = sprintf(
+                _T('No member #%1$s.'),
+                (int)$values['member']
+            );
         } else {
             $this->setMember((int)$values['member']);
         }
@@ -207,6 +231,7 @@ class Subscription
             $this->comment = $values['comment'];
         }
 
+        $errors_count = count($this->errors);
         if (!isset($values['subscription_date']) || empty($values['subscription_date'])) {
             $this->errors[] = _T('Subscription date is mandatory', 'activities');
         } else {
@@ -219,6 +244,13 @@ class Subscription
             $this->setDate('end_date', $values['end_date']);
         }
 
+        if (
+            count($this->errors) === $errors_count
+            && $this->end_date < $this->subscription_date
+        ) {
+            $this->errors[] = _T('End date must not be before subscription date.', 'activities');
+        }
+
         if (count($this->errors) > 0) {
             Analog::log(
                 'Some errors has been threw attempting to edit/store a subscription' . "\n"
@@ -229,6 +261,18 @@ class Subscription
         }
 
         return true;
+    }
+
+    /**
+     * Does member exist?
+     *
+     * @param int $id Member ID
+     */
+    private function memberExists(int $id): bool
+    {
+        $select = $this->zdb->select(Adherent::TABLE);
+        $select->columns([Adherent::PK])->where([Adherent::PK => $id]);
+        return $this->zdb->execute($select)->count() > 0;
     }
 
     /**

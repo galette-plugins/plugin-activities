@@ -367,4 +367,99 @@ class Subscription extends GaletteTestCase
         $this->assertFalse($this->isInGroup($hiking_group->getId(), $member_one->id));
         $this->assertSame(1, $this->countSubscriptions($hiking));
     }
+
+    /**
+     * Assert subscription data is refused
+     *
+     * @param array<string,mixed> $data   Subscription data, merged with valid ones
+     * @param array<string>       $errors Expected errors
+     */
+    private function expectInvalid(array $data, array $errors): void
+    {
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
+        $this->assertFalse($subscription->check($data + [
+            'subscription_date' => date('Y-m-d'),
+            'end_date' => date('Y-m-d', strtotime('+1 year')),
+        ]));
+        $this->assertSame($errors, $subscription->getErrors());
+        $this->expectLogEntry(\Analog::ERROR, 'Some errors has been threw attempting to edit/store a subscription');
+    }
+
+    /**
+     * Activity and member must exist
+     */
+    public function testCheckActivityAndMemberExist(): void
+    {
+        $member_one = $this->getMemberOne();
+        $activity = $this->insertActivity('Climbing');
+
+        $this->expectInvalid(['activity' => $activity + 1000, 'member' => $member_one->id], ['No activity #' . ($activity + 1000) . '.']);
+        $this->expectInvalid(['activity' => $activity, 'member' => $member_one->id + 1000], ['No member #' . ($member_one->id + 1000) . '.']);
+    }
+
+    /**
+     * End date cannot be before subscription date
+     */
+    public function testCheckDates(): void
+    {
+        $member_one = $this->getMemberOne();
+        $activity = $this->insertActivity('Climbing');
+
+        $this->expectInvalid(
+            [
+                'activity' => $activity,
+                'member' => $member_one->id,
+                'subscription_date' => '2026-09-26',
+                'end_date' => '2026-09-25',
+            ],
+            ['End date must not be before subscription date.']
+        );
+
+        //same day is fine
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
+        $this->assertTrue($subscription->check([
+            'activity' => $activity,
+            'member' => $member_one->id,
+            'subscription_date' => '2026-09-26',
+            'end_date' => '2026-09-26',
+        ]));
+    }
+
+    /**
+     * Amounts accept comma decimal separator and zero; new subscriptions default to activity price,
+     * existing ones can be cleared
+     */
+    public function testCheckAmount(): void
+    {
+        $member_one = $this->getMemberOne();
+        $activity = $this->insertActivity('Climbing');
+        $data = [
+            'activity' => $activity,
+            'member' => $member_one->id,
+            'subscription_date' => date('Y-m-d'),
+            'end_date' => date('Y-m-d', strtotime('+1 year')),
+            'save' => '1',
+        ];
+
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
+        $this->assertTrue($subscription->check($data + ['payment_amount' => '12,50']));
+        $this->assertSame(12.5, $subscription->getAmount());
+
+        $this->assertTrue($subscription->check($data + ['payment_amount' => '0']));
+        $this->assertSame(0.0, $subscription->getAmount());
+
+        //activity price, from fixtures
+        $this->assertTrue($subscription->check($data + ['payment_amount' => '']));
+        $this->assertSame(10.0, $subscription->getAmount());
+        $this->assertTrue($subscription->store());
+
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, (int)$subscription->getId());
+        $this->assertTrue($subscription->check($data + ['payment_amount' => '']));
+        $this->assertNull($subscription->getAmount());
+        $this->assertTrue($subscription->store());
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, (int)$subscription->getId());
+        $this->assertNull($subscription->getAmount());
+
+        $this->expectInvalid($data + ['payment_amount' => 'twelve'], ['Amount must be a number.']);
+    }
 }
