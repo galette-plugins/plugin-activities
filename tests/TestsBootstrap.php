@@ -38,3 +38,4 @@ $basepath = '../../../galette/';
 
 include_once '../../../tests/TestsBootstrap.php';
 require_once __DIR__ . '/../_config.inc.php';
+require_once __DIR__ . '/ActivitiesFixtures.php';
