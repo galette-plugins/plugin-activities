@@ -222,7 +222,19 @@ class SubscriptionsController extends AbstractPluginController
         }
 
         if ($id !== null && $subscription->getId() != $id) {
-            $subscription->load($id);
+            if (!$subscription->load($id)) {
+                $this->flash->addMessage(
+                    'error_detected',
+                    sprintf(
+                        //TRANS: %1$s is the subscription ID
+                        _T('No subscription #%1$s.', 'activities'),
+                        $id
+                    )
+                );
+                return $response
+                    ->withStatus(302)
+                    ->withHeader('Location', $this->routeparser->urlFor('activities_subscriptions'));
+            }
         } elseif ($id_adh !== null) {
             $subscription->setMember($id_adh);
         }

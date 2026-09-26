@@ -128,4 +128,22 @@ class SubscriptionsController extends GaletteRoutingTestCase
 
         $this->resetStaffStatus($staff, $member_two);
     }
+
+    /**
+     * Unknown subscriptions are not edited
+     */
+    public function testEditUnknownSubscription(): void
+    {
+        $this->logSuperAdmin();
+        $id = $this->insertSubscription($this->insertActivity('Climbing'), $this->getMemberOne()->id) + 1000;
+
+        $test_response = $this->app->handle($this->createRequest('activities_subscription_edit', ['id' => (string)$id]));
+        $this->assertSame(
+            ['Location' => [$this->routeparser->urlFor('activities_subscriptions')]],
+            $test_response->getHeaders()
+        );
+        $this->assertSame(302, $test_response->getStatusCode());
+        $this->expectNoLogEntry();
+        $this->expectFlashData(['error_detected' => ['No subscription #' . $id . '.']]);
+    }
 }

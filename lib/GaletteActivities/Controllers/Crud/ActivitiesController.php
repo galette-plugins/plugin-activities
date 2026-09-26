@@ -151,8 +151,18 @@ class ActivitiesController extends AbstractPluginController
             $activity = new Activity($this->zdb);
         }
 
-        if ($id !== null && $activity->getId() != $id) {
-            $activity->load($id);
+        if ($id !== null && $activity->getId() != $id && !$activity->load($id)) {
+            $this->flash->addMessage(
+                'error_detected',
+                sprintf(
+                    //TRANS: %1$s is the activity ID
+                    _T('No activity #%1$s.', 'activities'),
+                    $id
+                )
+            );
+            return $response
+                ->withStatus(302)
+                ->withHeader('Location', $this->routeparser->urlFor('activities_activities'));
         }
 
         // template variable declaration
