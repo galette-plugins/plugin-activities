@@ -64,7 +64,7 @@
                 <a href="{{ url_for("activities_activity_edit", {"id": aid}) }}">{{ activity.getName() }}</a>
             </td>
             <td data-col-label="{{ _T("Type", "activities") }}">{{ activity.getType() }}</td>
-            <td data-col-label="{{ _T("Price", "activities") }}">{% if activity.getPrice() %}{{ activity.getPrice()|number_format(2) }}{% endif %}</td>
+            <td data-col-label="{{ _T("Price", "activities") }}">{% if activity.getPrice() is not null %}{{ activity.getPrice()|number_format(2) }}{% endif %}</td>
             <td class="collapsing" data-col-label="{{ _T("Creation date", "activities") }}">{{ activity.getCreationDate()|date(_T("Y-m-d")) }}</td>
             <td data-col-label="{{ _T("Group", "activities") }}">{%  if activity.getGroup() %}{{ activity.getGroup().getFullName() }}{% endif %}</td>
             <td class="center actions_row collapsing">

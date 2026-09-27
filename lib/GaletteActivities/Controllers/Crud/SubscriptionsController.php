@@ -225,7 +225,6 @@ class SubscriptionsController extends AbstractController
             'filters'   => $m->getFilters(),
             'count'     => $m->getCount()
         ];
-        $route_params['autocomplete'] = true;
 
         //check if current attached member is part of the list
         if (
@@ -246,7 +245,6 @@ class SubscriptionsController extends AbstractController
             array_merge(
                 $route_params,
                 [
-                    'autocomplete'      => true,
                     'page_title'        => $title,
                     'subscription'      => $subscription,
                     'activities'        => $activities->getList(),

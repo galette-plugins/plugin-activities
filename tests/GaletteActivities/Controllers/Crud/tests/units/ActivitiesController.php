@@ -170,15 +170,18 @@ class ActivitiesController extends GaletteRoutingTestCase
         $group = $this->createGroup('Climbers');
         $this->insertActivity('Climbing', $group->getId(), ['price' => 12.5]);
         $this->insertActivity('Hiking', null, ['price' => null]);
+        $this->insertActivity('Diving', null, ['price' => 0]);
 
         $test_response = $this->app->handle($this->createRequest('activities_activities'));
         $this->assertSame(200, $test_response->getStatusCode());
         $body = (string)$test_response->getBody();
-        $this->assertStringContainsString('2 activities', $body);
+        $this->assertStringContainsString('3 activities', $body);
         $this->assertStringContainsString('Climbing', $body);
         $this->assertStringContainsString('12.50', $body);
         $this->assertStringContainsString('Climbers', $body);
         $this->assertStringContainsString('Hiking', $body);
+        //free activities have a price
+        $this->assertStringContainsString('<td data-col-label="Price">0.00</td>', $body);
         $this->expectNoLogEntry();
     }
 
@@ -196,6 +199,7 @@ class ActivitiesController extends GaletteRoutingTestCase
         $body = (string)$test_response->getBody();
         $this->assertStringContainsString('action="' . $this->routeparser->urlFor('activities_storeactivity_add') . '"', $body);
         $this->assertStringContainsString('Climbers', $body);
+        $this->assertStringNotContainsString('autocomplete="1"', $body);
         $this->expectNoLogEntry();
 
         $test_response = $this->app->handle($this->createRequest('activities_activity_edit', ['id' => (string)$id]));

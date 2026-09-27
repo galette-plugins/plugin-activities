@@ -245,7 +245,10 @@ class SubscriptionsController extends GaletteRoutingTestCase
         $this->assertStringContainsString('Climbing', $body);
         $this->assertStringContainsString('Hiking', $body);
         $this->assertStringContainsString($member_one->sfullname, $body);
-        $this->assertStringContainsString('Found subscriptions total 17.5', $body);
+        $this->assertStringContainsString('<td class="subscription-paid" data-col-label="Amount">12.50</td>', $body);
+        $this->assertStringContainsString('Found subscriptions total 17.50', $body);
+        //removal modal
+        $this->assertStringContainsString('_removeItems', $body);
         $this->expectNoLogEntry();
     }
 
@@ -306,6 +309,10 @@ class SubscriptionsController extends GaletteRoutingTestCase
 
         $test_response = $this->app->handle($this->createRequest('activities_subscription_add', ['id_adh' => (string)$member_one->id]));
         $this->assertSame(200, $test_response->getStatusCode());
+        //form is reloaded by the plugin script, not by inline code
+        $body = (string)$test_response->getBody();
+        $this->assertStringContainsString('activities.js"', $body);
+        $this->assertStringNotContainsString("$('#activity').on('change'", $body);
         $this->expectNoLogEntry();
 
         //activity change posts the form without save
@@ -344,6 +351,7 @@ class SubscriptionsController extends GaletteRoutingTestCase
         $test_response = $this->app->handle($this->createRequest('activities_subscription_edit', ['id' => (string)$id]));
         $this->assertSame(200, $test_response->getStatusCode());
         $this->assertStringContainsString('First comment', (string)$test_response->getBody());
+        $this->assertStringNotContainsString('autocomplete="1"', (string)$test_response->getBody());
         $this->expectNoLogEntry();
 
         $request = $this->createRequest('activities_storesubscription_edit', [], 'POST')

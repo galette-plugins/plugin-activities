@@ -103,11 +103,8 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script type="text/javascript">
         {% include "elements/js/choose_adh.js.twig" with {"js_chosen_id": "#member"} %}
-        //reload form with selected activity values, without storing
-        $('#activity').on('change', function() {
-            $(this).parents('form').submit();
-        });
     </script>
 {% endblock %}

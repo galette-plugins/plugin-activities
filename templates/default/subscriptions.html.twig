@@ -174,7 +174,7 @@
     {% if nb > 0 %}
     <tr>
         <td class="right" colspan="10">
-            {{ _T("Found subscriptions total %f", "activities")|replace({'%f': subscriptions.getSum()}) }}
+            {{ _T("Found subscriptions total %f", "activities")|replace({'%f': subscriptions.getSum()|number_format(2)}) }}
         </td>
     </tr>
     {% endif %}
@@ -198,7 +198,7 @@
                     </td>
                     <td class="{{ rclass }} collapsing" data-col-label="{{ _T("Subscription date", "activities") }}">{{ subscription.getSubscriptionDate()|date(_T("Y-m-d")) }}</td>
                     <td class="{{ rclass }} collapsing" data-col-label="{{ _T("End date", "activities") }}">{{ subscription.getEndDate()|date(_T("Y-m-d")) }}</td>
-                    <td class="{{ rclass }}" data-col-label="{{ _T("Amount", "activities") }}">{{ subscription.getAmount() }}</td>
+                    <td class="{{ rclass }}" data-col-label="{{ _T("Amount", "activities") }}">{% if subscription.getAmount() is not null %}{{ subscription.getAmount()|number_format(2) }}{% endif %}</td>
                     <td class="{{ rclass }} center collapsing" data-col-label="{{ _T("Paid", "activities") }}">
                         <i class="money bill wave{% if not subscription.isPaid() %} red{% endif %} icon tooltip" data-html="{% if subscription.isPaid() %}{{ _T("Paid", "activities") }}{% else %}{{ _T("Not paid", "activities") }}{% endif %}"></i>
                         <span class="visually-hidden">
@@ -250,6 +250,7 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script type="text/javascript">
         {% include "elements/js/choose_adh.js.twig" with {"js_chosen_id": "#member_filter"} %}
     </script>
