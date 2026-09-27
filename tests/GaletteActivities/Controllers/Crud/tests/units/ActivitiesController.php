@@ -200,6 +200,7 @@ class ActivitiesController extends GaletteRoutingTestCase
         $this->assertStringContainsString('action="' . $this->routeparser->urlFor('activities_storeactivity_add') . '"', $body);
         $this->assertStringContainsString('Climbers', $body);
         $this->assertStringNotContainsString('autocomplete="1"', $body);
+        $this->assertStringContainsString('Subscribed members join this group, and are never removed from it.', $body);
         $this->expectNoLogEntry();
 
         $test_response = $this->app->handle($this->createRequest('activities_activity_edit', ['id' => (string)$id]));
