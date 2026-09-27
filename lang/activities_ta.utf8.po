@@ -89,9 +89,10 @@ msgstr "செயல்பாடுகள்"
 msgid "Subscriptions"
 msgstr "சந்தாக்கள்"
 
-#. TRANS %membername will be replaced with current member name
+#. TRANS: %1$s is the member name
 #: ../lib/GaletteActivities/PluginGaletteActivities.php:117
-msgid "New subscription for %membername"
+#, fuzzy, php-format
+msgid "New subscription for %1$s"
 msgstr "%உறுப்பினர் பெயருக்கான புதிய சந்தா"
 
 #: ../lib/GaletteActivities/Entity/Activity.php:182
@@ -289,8 +290,8 @@ msgstr ""
 
 #: ../tempcache/subscriptions.html.twig:350
 #, php-format
-msgid "Found subscriptions total %f"
-msgstr "மொத்தம் %f சந்தாக்கள் கிடைத்தன"
+msgid "Found subscriptions total %1$s"
+msgstr "மொத்தம் %1$s சந்தாக்கள் கிடைத்தன"
 
 #: ../tempcache/subscriptions.html.twig:506
 msgid "Edit subscription"

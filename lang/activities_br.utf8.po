@@ -88,9 +88,10 @@ msgstr ""
 msgid "Subscriptions"
 msgstr ""
 
-#. TRANS %membername will be replaced with current member name
+#. TRANS: %1$s is the member name
 #: ../lib/GaletteActivities/PluginGaletteActivities.php:117
-msgid "New subscription for %membername"
+#, php-format
+msgid "New subscription for %1$s"
 msgstr ""
 
 #: ../lib/GaletteActivities/Entity/Activity.php:182
@@ -294,7 +295,7 @@ msgstr ""
 
 #: ../tempcache/subscriptions.html.twig:350
 #, php-format
-msgid "Found subscriptions total %f"
+msgid "Found subscriptions total %1$s"
 msgstr ""
 
 #: ../tempcache/subscriptions.html.twig:506

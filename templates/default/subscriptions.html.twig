@@ -174,7 +174,7 @@
     {% if nb > 0 %}
     <tr>
         <td class="right" colspan="10">
-            {{ _T("Found subscriptions total %f", "activities")|replace({'%f': subscriptions.getSum()|number_format(2)}) }}
+            {{ _T("Found subscriptions total %1$s", "activities")|format(subscriptions.getSum()|number_format(2)) }}
         </td>
     </tr>
     {% endif %}

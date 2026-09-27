@@ -97,11 +97,10 @@ class PluginGaletteActivities extends GalettePlugin implements MenuProviderInter
 
         return [
             [
-                'label' => str_replace(
-                    '%membername',
-                    $member->sname,
-                    //TRANS %membername will be replaced with current member name
-                    _T("New subscription for %membername", "activities")
+                'label' => sprintf(
+                    //TRANS: %1$s is the member name
+                    _T('New subscription for %1$s', 'activities'),
+                    $member->sname
                 ),
                 'route' => [
                     'name' => 'activities_subscription_add',

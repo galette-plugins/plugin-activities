@@ -89,10 +89,11 @@ msgstr "Активность"
 msgid "Subscriptions"
 msgstr "Подписки"
 
-#. TRANS %membername will be replaced with current member name
+#. TRANS: %1$s is the member name
 #: ../lib/GaletteActivities/PluginGaletteActivities.php:117
-msgid "New subscription for %membername"
-msgstr "Новая подписка для %membername"
+#, php-format
+msgid "New subscription for %1$s"
+msgstr "Новая подписка для %1$s"
 
 #: ../lib/GaletteActivities/Entity/Activity.php:182
 msgid "Name is mandatory"
@@ -291,8 +292,8 @@ msgstr "Не оплачено"
 
 #: ../tempcache/subscriptions.html.twig:350
 #, php-format
-msgid "Found subscriptions total %f"
-msgstr "Всего найдено подписок %f"
+msgid "Found subscriptions total %1$s"
+msgstr "Всего найдено подписок %1$s"
 
 #: ../tempcache/subscriptions.html.twig:506
 msgid "Edit subscription"
