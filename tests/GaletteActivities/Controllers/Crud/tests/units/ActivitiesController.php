@@ -117,4 +117,24 @@ class ActivitiesController extends GaletteRoutingTestCase
         $this->assertStringContainsString('name="nbshow" value="20"', (string)$test_response->getBody());
         $this->expectNoLogEntry();
     }
+
+    /**
+     * Session keys do not collide with other plugins ones
+     */
+    public function testSessionKeysArePrefixed(): void
+    {
+        $this->logSuperAdmin();
+        //plugin-events stores its own entity and filters under these keys
+        $this->session->activity = new \stdClass();
+        $this->session->activities_filter = new \stdClass();
+        $this->session->subscription = new \stdClass();
+
+        //list first: pagination adds Twig globals, impossible once a page has been rendered
+        foreach (['activities_activities', 'activities_activity_add', 'activities_subscription_add'] as $route) {
+            $test_response = $this->app->handle($this->createRequest($route));
+            $this->assertSame(200, $test_response->getStatusCode(), $route);
+            $this->expectNoLogEntry();
+        }
+        unset($this->session->activity, $this->session->activities_filter, $this->session->subscription);
+    }
 }

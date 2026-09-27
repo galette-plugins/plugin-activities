@@ -211,9 +211,9 @@ class SubscriptionsController extends AbstractPluginController
     {
         $route_params = [];
 
-        if ($this->session->subscription !== null) {
-            $subscription = $this->session->subscription;
-            $this->session->subscription = null;
+        $subscription = $this->session->plugin_activities_subscription ?? null;
+        if ($subscription !== null) {
+            unset($this->session->plugin_activities_subscription);
         } else {
             $subscription = new Subscription($this->zdb);
         }
@@ -356,7 +356,7 @@ class SubscriptionsController extends AbstractPluginController
         }
 
         if (!isset($post['save'])) {
-            $this->session->subscription = $subscription;
+            $this->session->plugin_activities_subscription = $subscription;
             $error_detected = [];
             $goto_list = false;
             $warning_detected[] = _T('Do not forget to store the subscription', 'activities');
@@ -397,7 +397,7 @@ class SubscriptionsController extends AbstractPluginController
             $redirect_url = $this->routeparser->urlFor('activities_subscriptions');
         } else {
             //store entity in session
-            $this->session->subscription = $subscription;
+            $this->session->plugin_activities_subscription = $subscription;
 
             if ($subscription->getId()) {
                 $route = 'activities_subscription_edit';
@@ -484,6 +484,6 @@ class SubscriptionsController extends AbstractPluginController
      */
     public static function getDefaultFilterName(): string
     {
-        return 'subscriptions';
+        return 'plugin_activities_subscriptions';
     }
 }

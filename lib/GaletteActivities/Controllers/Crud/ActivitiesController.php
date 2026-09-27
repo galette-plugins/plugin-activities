@@ -144,9 +144,9 @@ class ActivitiesController extends AbstractPluginController
      */
     public function edit(Request $request, Response $response, ?int $id = null, string $action = 'edit'): Response
     {
-        if ($this->session->activity !== null) {
-            $activity = $this->session->activity;
-            $this->session->activity = null;
+        $activity = $this->session->plugin_activities_activity ?? null;
+        if ($activity !== null) {
+            unset($this->session->plugin_activities_activity);
         } else {
             $activity = new Activity($this->zdb);
         }
@@ -264,7 +264,7 @@ class ActivitiesController extends AbstractPluginController
             $redirect_url = $this->routeparser->urlFor('activities_activities');
         } else {
             //store entity in session
-            $this->session->activity = $activity;
+            $this->session->plugin_activities_activity = $activity;
 
             if ($activity->getId()) {
                 $redirect_url = $this->routeparser->urlFor(
@@ -342,6 +342,6 @@ class ActivitiesController extends AbstractPluginController
      */
     public static function getDefaultFilterName(): string
     {
-        return 'activities';
+        return 'plugin_activities_activities';
     }
 }
