@@ -70,8 +70,8 @@ class ActivitiesController extends GaletteRoutingTestCase
             ['Location' => [$this->routeparser->urlFor('activities_activity_add')]],
             $test_response->getHeaders()
         );
-        $this->expectLogEntry(\Analog::ERROR, 'Query error');
-        $this->expectLogEntry(\Analog::ERROR, 'Something went wrong');
+        $this->expectLogEntry(\Analog\Analog::ERROR, 'Query error');
+        $this->expectLogEntry(\Analog\Analog::ERROR, 'Something went wrong');
         $this->expectNoLogEntry();
         $this->expectFlashData(['error_detected' => ['An error occurred while storing the activity.']]);
     }

@@ -67,7 +67,7 @@ class Activity extends GaletteTestCase
         $this->assertFalse($activity->check($data));
         $this->assertSame(['Name is mandatory'], $activity->getErrors());
         $this->expectLogEntry(
-            \Analog::ERROR,
+            \Analog\Analog::ERROR,
             'Name is mandatory'
         );
 
@@ -80,7 +80,7 @@ class Activity extends GaletteTestCase
         $this->assertFalse($activity->check($data));
         $this->assertSame(['Type is too long'], $activity->getErrors());
         $this->expectLogEntry(
-            \Analog::ERROR,
+            \Analog\Analog::ERROR,
             'Type is too long'
         );
 
@@ -159,7 +159,7 @@ class Activity extends GaletteTestCase
         $activity = new \GaletteActivities\Entity\Activity($this->zdb);
         $this->assertFalse($activity->check($data));
         $this->assertSame($errors, $activity->getErrors());
-        $this->expectLogEntry(\Analog::ERROR, 'Error(s) checking activity before store');
+        $this->expectLogEntry(\Analog\Analog::ERROR, 'Error(s) checking activity before store');
     }
 
     /**

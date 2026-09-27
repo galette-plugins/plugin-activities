@@ -120,7 +120,7 @@ class Subscription extends GaletteTestCase
             $subscription->getErrors()
         );
         $this->expectLogEntry(
-            \Analog::ERROR,
+            \Analog\Analog::ERROR,
             'Activity is mandatory',
         );
 
@@ -137,7 +137,7 @@ class Subscription extends GaletteTestCase
             $subscription->getErrors()
         );
         $this->expectLogEntry(
-            \Analog::ERROR,
+            \Analog\Analog::ERROR,
             'Member is mandatory',
         );
 
@@ -154,7 +154,7 @@ class Subscription extends GaletteTestCase
             $subscription->getErrors()
         );
         $this->expectLogEntry(
-            \Analog::ERROR,
+            \Analog\Analog::ERROR,
             'Subscription date is mandatory',
         );
 
@@ -172,7 +172,7 @@ class Subscription extends GaletteTestCase
             $subscription->getErrors()
         );
         $this->expectLogEntry(
-            \Analog::ERROR,
+            \Analog\Analog::ERROR,
             '- Wrong date format (Y-m-d) for Subscription date!',
         );
 
@@ -382,7 +382,7 @@ class Subscription extends GaletteTestCase
             'end_date' => date('Y-m-d', strtotime('+1 year')),
         ]));
         $this->assertSame($errors, $subscription->getErrors());
-        $this->expectLogEntry(\Analog::ERROR, 'Some errors has been threw attempting to edit/store a subscription');
+        $this->expectLogEntry(\Analog\Analog::ERROR, 'Some errors has been threw attempting to edit/store a subscription');
     }
 
     /**
