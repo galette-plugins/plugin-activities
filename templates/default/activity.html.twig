@@ -10,7 +10,7 @@
     <form action="{% if activity.getId() %}{{ url_for("activities_storeactivity_edit", {"id": activity.getId()}) }}{% else %}{{ url_for("activities_storeactivity_add") }}{% endif %}" method="post" class="ui form">
         <div class="ui styled fluid accordion field">
             <div class="active title">
-                <i class="icon dropdown"></i>
+                <i class="icon dropdown" aria-hidden="true"></i>
                 {{ _T("General information", "activities") }}
             </div>
             <div class="active content">
@@ -62,7 +62,7 @@
 
         <div class="ui basic center aligned fitted segment">
             <button type="submit" name="valid" class="action ui labeled icon primary button">
-                <i class="save icon"></i> {{ _T("Save") }}
+                <i class="save icon" aria-hidden="true"></i> {{ _T("Save") }}
             </button>
             <input type="hidden" name="id" id="id" value="{{ activity.getId() }}"/>
         </div>

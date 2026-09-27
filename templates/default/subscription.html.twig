@@ -10,7 +10,7 @@
     <form class="ui form" action="{% if subscription.getId() %}{{ url_for("activities_storesubscription_edit", {"id": subscription.getId()}) }}{% else %}{{ url_for("activities_storesubscription_add") }}{% endif %}" method="post" id="modifform" enctype="multipart/form-data">
         <div class="ui styled fluid accordion field">
             <div class="active title">
-                <i class="icon dropdown"></i>
+                <i class="icon dropdown" aria-hidden="true"></i>
                 {{ _T("Subscription information", "activities") }}
             </div>
             <div class="active content">
@@ -66,7 +66,7 @@
 
         <div class="ui styled fluid accordion field">
             <div class="active title">
-                <i class="icon dropdown"></i>
+                <i class="icon dropdown" aria-hidden="true"></i>
                 {{ _T("Financial information", "activities") }}
             </div>
             <div class="active content">
@@ -100,7 +100,7 @@
         </div>
         <div class="ui basic center aligned fitted segment">
             <button type="submit" name="save" class="action ui labeled icon primary button">
-                <i class="save icon"></i> {{ _T("Save") }}
+                <i class="save icon" aria-hidden="true"></i> {{ _T("Save") }}
             </button>
             <input type="hidden" name="id" id="id" value="{{ subscription.getId() }}"/>
         </div>

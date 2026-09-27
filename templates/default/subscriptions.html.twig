@@ -157,7 +157,7 @@
 
             <div class="ui right aligned basic fitted segment field flexend">
                 <button type="submit"  class="tooltip action ui labeled icon primary button" title="{{ _T('Apply filters') }}" name="filter">
-                    <i class="search icon"></i>
+                    <i class="search icon" aria-hidden="true"></i>
                     {{ _T('Filter') }}
                 </button>
                 <button type="submit" name="clear_filter" class="ui labeled icon button tooltip" title="{{ _T('Reset all filters to defaults') }}">
@@ -200,7 +200,7 @@
                     <td class="{{ rclass }} collapsing" data-col-label="{{ _T("End date", "activities") }}">{{ subscription.getEndDate()|date(_T("Y-m-d")) }}</td>
                     <td class="{{ rclass }}" data-col-label="{{ _T("Amount", "activities") }}">{% if subscription.getAmount() is not null %}{{ subscription.getAmount()|number_format(2) }}{% endif %}</td>
                     <td class="{{ rclass }} center collapsing" data-col-label="{{ _T("Paid", "activities") }}">
-                        <i class="money bill wave{% if not subscription.isPaid() %} red{% endif %} icon tooltip" data-html="{% if subscription.isPaid() %}{{ _T("Paid", "activities") }}{% else %}{{ _T("Not paid", "activities") }}{% endif %}"></i>
+                        <i class="money bill wave{% if not subscription.isPaid() %} red{% endif %} icon tooltip" data-html="{% if subscription.isPaid() %}{{ _T("Paid", "activities") }}{% else %}{{ _T("Not paid", "activities") }}{% endif %}" aria-hidden="true"></i>
                         <span class="visually-hidden">
                         {% if subscription.isPaid() %}
                             {{ _T("Paid", "activities") }}
