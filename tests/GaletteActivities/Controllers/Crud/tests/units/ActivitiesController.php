@@ -71,7 +71,7 @@ class ActivitiesController extends GaletteRoutingTestCase
             $test_response->getHeaders()
         );
         $this->expectLogEntry(\Analog\Analog::ERROR, 'Query error');
-        $this->expectLogEntry(\Analog\Analog::ERROR, 'Something went wrong');
+        $this->expectLogEntry(\Analog\Analog::ERROR, 'Unable to store activity #new | ');
         $this->expectNoLogEntry();
         $this->expectFlashData(['error_detected' => ['An error occurred while storing the activity.']]);
     }
@@ -232,7 +232,7 @@ class ActivitiesController extends GaletteRoutingTestCase
         );
         $this->expectNoLogEntry();
         $this->expectFlashData(['success_detected' => ['Activity has been modified.']]);
-        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $id);
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history, $id);
         $this->assertSame('Bouldering', $activity->getName());
         $this->assertSame(8.0, $activity->getPrice());
 
@@ -243,14 +243,17 @@ class ActivitiesController extends GaletteRoutingTestCase
         $this->expectLogEntry(\Analog\Analog::ERROR, 'Type is too long');
         $this->expectNoLogEntry();
         $this->expectFlashData(['error_detected' => ['Type is too long']]);
-        $this->assertSame('', (new \GaletteActivities\Entity\Activity($this->zdb, $id))->getType());
+        $this->assertSame('', (new \GaletteActivities\Entity\Activity($this->zdb, $this->history, $id))->getType());
 
-        //form is displayed again from session
+        //form is displayed again from session, which keeps posted values, not the entity and its database connection
         $this->assertNotNull($this->session->plugin_activities_activity);
+        $this->assertStringNotContainsString(\Galette\Core\Db::class, serialize($this->session->plugin_activities_activity));
         $test_response = $this->app->handle($this->createRequest('activities_activity_edit', ['id' => (string)$id]));
         $this->assertSame(200, $test_response->getStatusCode());
         $this->assertStringContainsString('value="Bouldering"', (string)$test_response->getBody());
         $this->assertFalse(isset($this->session->plugin_activities_activity));
+        //posted values are checked again
+        $this->expectLogEntry(\Analog\Analog::ERROR, 'Type is too long');
         $this->expectNoLogEntry();
     }
 
@@ -276,7 +279,7 @@ class ActivitiesController extends GaletteRoutingTestCase
         );
         $this->expectNoLogEntry();
         $this->expectFlashData(['success_detected' => ['Successfully deleted!']]);
-        $this->assertFalse((new \GaletteActivities\Entity\Activity($this->zdb))->load($id));
+        $this->assertNotFound(fn() => (new \GaletteActivities\Entity\Activity($this->zdb, $this->history))->load($id));
         $this->assertSame(0, $this->countSubscriptions($id));
     }
 }

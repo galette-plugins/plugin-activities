@@ -37,10 +37,7 @@
                     {% set group_list_values = group_list_values + {(group.getId()): group.getIndentName()} %}
                 {% endfor %}
 
-                {% set group_id = null %}
-                {% if activity.getGroup() is not null %}
-                    {% set group_id = activity.getGroup().getID() %}
-                {% endif %}
+                {% set group_id = activity.getGroupId() %}
                 {% include "components/forms/select.html.twig" with {
                     id: 'id_group',
                     value: group_id,

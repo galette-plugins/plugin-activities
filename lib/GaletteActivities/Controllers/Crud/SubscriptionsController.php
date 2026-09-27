@@ -10,31 +10,57 @@ declare(strict_types=1);
 
 namespace GaletteActivities\Controllers\Crud;
 
+use Galette\Core\Pagination;
 use Galette\Entity\Adherent;
 use Galette\Repository\Members;
-use Galette\Controllers\Crud\AbstractPluginController;
 use GaletteActivities\Filters\SubscriptionsList;
 use GaletteActivities\Entity\Subscription;
 use GaletteActivities\Entity\Activity;
+use GaletteActivities\NotFoundException;
 use GaletteActivities\Repository\Subscriptions;
 use GaletteActivities\Repository\Activities;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
-use DI\Attribute\Inject;
 
 /**
  * Subscriptions controller
  *
  * @author Johan Cwiklinski <johan@x-tnd.be>
+ *
+ * @extends AbstractController<SubscriptionsList>
  */
 
-class SubscriptionsController extends AbstractPluginController
+class SubscriptionsController extends AbstractController
 {
     /**
-     * @var array<string, mixed>
+     * Entity name, for session keys and logs
      */
-    #[Inject("Plugin Galette Activities")]
-    protected array $module_info;
+    protected function getEntityName(): string
+    {
+        return 'subscription';
+    }
+
+    /**
+     * Create empty list filters
+     */
+    protected function createFilters(): Pagination
+    {
+        return new SubscriptionsList();
+    }
+
+    /**
+     * Get the message for a subscription that does not exist
+     *
+     * @param int $id Requested subscription identifier
+     */
+    protected function getNotFoundMessage(int $id): string
+    {
+        return sprintf(
+            //TRANS: %1$s is the subscription ID
+            _T('No subscription #%1$s.', 'activities'),
+            $id
+        );
+    }
 
     // CRUD - Create
 
@@ -67,34 +93,27 @@ class SubscriptionsController extends AbstractPluginController
      */
     public function list(Request $request, Response $response, ?string $option = null, string|int|null $value = null): Response
     {
-        $filters = $this->session->{$this->getFilterName($this->getDefaultFilterName())} ?? new SubscriptionsList();
+        $filters = $this->getFilters($option, $value);
 
-        if ($option !== null) {
-            switch ($option) {
-                case 'page':
-                    $filters->current_page = (int)$value;
-                    break;
-                case 'order':
-                    $filters->orderby = $value;
-                    break;
+        $activity = null;
+        if ($filters->activity_filter !== null) {
+            try {
+                $activity = new Activity($this->zdb, $this->history, (int)$filters->activity_filter);
+            } catch (NotFoundException) {
+                $filters->activity_filter = null;
             }
         }
 
-        $activity = null;
-        if ($filters->activity_filter) {
-            $activity = new Activity($this->zdb, (int)$filters->activity_filter);
-        }
+        $subscriptions = new Subscriptions($this->zdb, $this->login, $this->history, $this->preferences, $filters);
 
-        $subscriptions = new Subscriptions($this->zdb, $filters);
-
-        $activities = new Activities($this->zdb, $this->login, $this->preferences);
+        $activities = new Activities($this->zdb, $this->login, $this->history, $this->preferences);
         $list = $subscriptions->getList();
         $count = $subscriptions->getCount();
 
         //assign pagination variables to the template and add pagination links
         $filters->setViewPagination($this->routeparser, $this->view, false);
 
-        $this->session->{$this->getFilterName($this->getDefaultFilterName())} = $filters;
+        $this->storeFilters($filters);
 
         // members
         $m = new Members();
@@ -128,73 +147,32 @@ class SubscriptionsController extends AbstractPluginController
     }
 
     /**
-     * Filtering
+     * Apply posted subscriptions filters
+     *
+     * @param SubscriptionsList   $filters Filters
+     * @param array<string,mixed> $post    Posted values
      */
-    public function filter(Request $request, Response $response): Response
+    protected function applyPostedFilters(Pagination $filters, array $post): void
     {
-        $post = $request->getParsedBody();
-        if (isset($this->session->{$this->getFilterName($this->getDefaultFilterName())})) {
-            $filters = $this->session->{$this->getFilterName($this->getDefaultFilterName())};
-        } else {
-            $filters = new SubscriptionsList();
-        }
-
-        //reinitialize filters
-        if (isset($post['clear_filter'])) {
-            $filters->reinit();
-        } else {
-            //number of rows to show
-            if (isset($post['nbshow'])) {
-                $filters->show = $post['nbshow'];
-            }
-
-            if (isset($post['paid_filter'])) {
-                if (is_numeric($post['paid_filter'])) {
-                    $filters->paid_filter = $post['paid_filter'];
-                }
-            }
-
-            if (isset($post['payment_type_filter'])) {
-                if (is_numeric($post['payment_type_filter'])) {
-                    $filters->payment_type_filter = $post['payment_type_filter'];
-                }
-            }
-
-            if (isset($post['activity_filter'])) {
-                if (is_numeric($post['activity_filter'])) {
-                    $filters->activity_filter = $post['activity_filter'];
-                }
-            }
-
-            if (isset($post['member_filter'])) {
-                if ($post['member_filter'] === '' || is_numeric($post['member_filter'])) {
-                    $filters->member_filter = $post['member_filter'];
-                }
-            }
-
-            if (isset($post['date_field'])) {
-                if (is_numeric($post['date_field'])) {
-                    $filters->date_field = $post['date_field'];
-                }
-            }
-
-            if (isset($post['start_date_filter'])) {
-                $filters->start_date_filter = $post['start_date_filter'];
-            }
-
-            if (isset($post['end_date_filter'])) {
-                $filters->end_date_filter = $post['end_date_filter'];
+        foreach (['paid_filter', 'payment_type_filter', 'activity_filter', 'date_field'] as $name) {
+            if (isset($post[$name]) && is_numeric($post[$name])) {
+                $filters->$name = $post[$name];
             }
         }
 
-        $this->session->{$this->getFilterName($this->getDefaultFilterName())} = $filters;
+        if (isset($post['member_filter'])) {
+            if ($post['member_filter'] === '' || is_numeric($post['member_filter'])) {
+                $filters->member_filter = $post['member_filter'];
+            }
+        }
 
-        return $response
-            ->withStatus(303)
-            ->withHeader(
-                'Location',
-                $this->routeparser->urlFor('activities_subscriptions')
-            );
+        if (isset($post['start_date_filter'])) {
+            $filters->start_date_filter = $post['start_date_filter'];
+        }
+
+        if (isset($post['end_date_filter'])) {
+            $filters->end_date_filter = $post['end_date_filter'];
+        }
     }
 
     // /CRUD - Read
@@ -210,42 +188,34 @@ class SubscriptionsController extends AbstractPluginController
     public function edit(Request $request, Response $response, ?int $id = null, string $action = 'edit', ?int $id_adh = null): Response
     {
         $route_params = [];
+        $subscription = new Subscription($this->zdb, $this->history);
 
-        $subscription = $this->session->plugin_activities_subscription ?? null;
-        if ($subscription !== null) {
-            unset($this->session->plugin_activities_subscription);
-        } else {
-            $subscription = new Subscription($this->zdb);
-        }
-
-        if ($id !== null && $subscription->getId() != $id) {
-            if (!$subscription->load($id)) {
-                $this->flash->addMessage(
-                    'error_detected',
-                    sprintf(
-                        //TRANS: %1$s is the subscription ID
-                        _T('No subscription #%1$s.', 'activities'),
-                        $id
-                    )
-                );
-                return $response
-                    ->withStatus(302)
-                    ->withHeader('Location', $this->routeparser->urlFor('activities_subscriptions'));
+        if ($id !== null) {
+            try {
+                $subscription->load($id);
+            } catch (NotFoundException) {
+                return $this->redirectNotFound($response, $id);
             }
         } elseif ($id_adh !== null) {
             $subscription->setMember($id_adh);
         }
 
+        //values posted before an error, or to reload the form
+        $values = $this->getPostedValues($subscription->getId());
+        if ($values !== null) {
+            $subscription->check($values);
+        }
+
         // template variable declaration
         $title = _T("Subscription", "activities");
-        if ($subscription->getId() != '') {
+        if ($subscription->getId() !== null) {
             $title .= ' (' . _T("modification") . ')';
         } else {
             $title .= ' (' . _T("creation") . ')';
         }
 
         //Activities
-        $activities = new Activities($this->zdb, $this->login, $this->preferences);
+        $activities = new Activities($this->zdb, $this->login, $this->history, $this->preferences);
 
         // members
         $m = new Members();
@@ -299,125 +269,77 @@ class SubscriptionsController extends AbstractPluginController
     public function doEdit(Request $request, Response $response, ?int $id = null, string $action = 'edit'): Response
     {
         $post = $request->getParsedBody();
-        $subscription = new Subscription($this->zdb);
-        if (isset($post['id']) && !empty($post['id'])) {
-            $subscription->load((int)$post['id']);
+        $subscription = new Subscription($this->zdb, $this->history);
+        if (!empty($post['id'])) {
+            try {
+                $subscription->load((int)$post['id']);
+            } catch (NotFoundException) {
+                return $this->redirectNotFound($response, (int)$post['id']);
+            }
         }
 
         if (isset($post['cancel'])) {
-            $redirect_url = $this->routeparser->urlFor(
-                'activities_subscriptions'
-            );
-            return $response
-                ->withStatus(303)
-                ->withHeader('Location', $redirect_url);
+            return $this->redirect($response, $this->routeparser->urlFor('activities_subscriptions'));
         }
 
-        $success_detected = [];
-        $warning_detected = [];
-        $error_detected = [];
-        $goto_list = true;
-
-        // Validation
-        $valid = $subscription->check($post);
-        if ($valid !== true) {
-            $error_detected = array_merge($error_detected, $subscription->getErrors());
-        }
-
-        if (count($error_detected) == 0 && isset($post['save'])) {
-            //all goes well, we can proceed
-
-            $new = false;
-            if ($subscription->getId() == '') {
-                $new = true;
-            }
-            try {
-                $store = $subscription->store();
-            } catch (\Throwable) {
-                //already logged by the entity
-                $store = false;
-            }
-            if ($store === true) {
-                //member has been stored :)
-                if ($new) {
-                    $success_detected[] = _T("New subscription has been successfully added.", "activities");
-                } else {
-                    $success_detected[] = _T("Subscription has been modified.", "activities");
-                }
-            } else {
-                //something went wrong :'(
-                $errors = $subscription->getErrors();
-                if (count($errors)) {
-                    $error_detected = array_merge($error_detected, $errors);
-                } else {
-                    $error_detected[] = _T("An error occurred while storing the subscription.", "activities");
-                }
-            }
-        }
-
+        //form posted to be reloaded, with values of the chosen activity
         if (!isset($post['save'])) {
-            $this->session->plugin_activities_subscription = $subscription;
-            $error_detected = [];
-            $goto_list = false;
-            $warning_detected[] = _T('Do not forget to store the subscription', 'activities');
+            $this->keepPostedValues($subscription->getId(), $post);
+            return $this->redirect(
+                response: $response,
+                redirect_url: $this->getFormUrl($subscription),
+                warnings: [_T('Do not forget to store the subscription', 'activities')]
+            );
         }
 
-        if (count($error_detected) > 0) {
-            foreach ($error_detected as $error) {
-                $this->flash->addMessage(
-                    'error_detected',
-                    $error
-                );
-            }
+        $successes = [];
+        $errors = [];
+        if ($subscription->check($post)) {
+            $this->storeEntity(
+                $subscription,
+                _T("New subscription has been successfully added.", "activities"),
+                _T("Subscription has been modified.", "activities"),
+                _T("An error occurred while storing the subscription.", "activities"),
+                $successes,
+                $errors
+            );
+        } else {
+            $errors = $subscription->getErrors();
         }
 
-        if (count($warning_detected) > 0) {
-            foreach ($warning_detected as $warning) {
-                $this->flash->addMessage(
-                    'warning_detected',
-                    $warning
-                );
-            }
-        }
-        if (count($success_detected) > 0) {
-            foreach ($success_detected as $success) {
-                $this->flash->addMessage(
-                    'success_detected',
-                    $success
-                );
-            }
-        }
-
-        if (count($error_detected) == 0 && $goto_list) {
+        if (count($errors) === 0) {
             //show subscriptions of the stored activity
-            $filter_name = $this->getFilterName($this->getDefaultFilterName());
-            $filters = $this->session->$filter_name ?? new SubscriptionsList();
+            $filters = $this->getFilters();
             $filters->activity_filter = $subscription->getActivityId();
-            $this->session->$filter_name = $filters;
+            $this->storeFilters($filters);
             $redirect_url = $this->routeparser->urlFor('activities_subscriptions');
         } else {
-            //store entity in session
-            $this->session->plugin_activities_subscription = $subscription;
-
-            if ($subscription->getId()) {
-                $route = 'activities_subscription_edit';
-                $rparams = [
-                    'id'        => $subscription->getId(),
-                    'action'    => 'edit'
-                ];
-            } else {
-                $route = 'activities_subscription_add';
-                $rparams = ['action' => 'add'];
-            }
-            $redirect_url = $this->routeparser->urlFor(
-                $route,
-                $rparams
-            );
+            $this->keepPostedValues($subscription->getId(), $post);
+            $redirect_url = $this->getFormUrl($subscription);
         }
 
-        return $response
-            ->withStatus(303)
-            ->withHeader('Location', $redirect_url);
+        return $this->redirect(
+            response: $response,
+            redirect_url: $redirect_url,
+            successes: $successes,
+            errors: $errors
+        );
+    }
+
+    /**
+     * Get URL of the form of a subscription
+     *
+     * @param Subscription $subscription Subscription
+     */
+    private function getFormUrl(Subscription $subscription): string
+    {
+        if ($subscription->getId() !== null) {
+            return $this->routeparser->urlFor(
+                'activities_subscription_edit',
+                ['id' => (string)$subscription->getId()]
+            );
+        }
+        return $this->routeparser->urlFor('activities_subscription_add');
     }
 
     // /CRUD - Update
@@ -453,14 +375,16 @@ class SubscriptionsController extends AbstractPluginController
      */
     public function confirmRemoveTitle(array $args): string
     {
-        $subscription = new Subscription($this->zdb, (int)$args['id']);
-        $member = $subscription->getMember();
-        $activity = $subscription->getActivity();
+        try {
+            $subscription = new Subscription($this->zdb, $this->history, (int)$args['id']);
+        } catch (NotFoundException) {
+            return $this->getNotFoundMessage((int)$args['id']);
+        }
         return sprintf(
             //TRANS: %1$s is the member name, %2$s the activity name.
             _T('Remove subscription for %1$s on %2$s', 'activities'),
-            $member->sname,
-            $activity->getName()
+            $subscription->getMember()?->sname,
+            $subscription->getActivity()?->getName()
         );
     }
 
@@ -472,8 +396,9 @@ class SubscriptionsController extends AbstractPluginController
      */
     protected function doDelete(array $args, array $post): bool
     {
-        $subscription = new Subscription($this->zdb, (int)$args['id']);
-        return $subscription->remove();
+        $subscription = new Subscription($this->zdb, $this->history, (int)$args['id']);
+        $subscription->remove();
+        return true;
     }
 
     // /CRUD - Delete

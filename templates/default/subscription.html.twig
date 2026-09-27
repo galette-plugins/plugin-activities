@@ -16,21 +16,21 @@
             <div class="active content">
                 {% include "components/forms/date.html.twig" with {
                     id: 'creation_date',
-                    value: subscription.getCreationDate(),
+                    value: subscription.getCreationDate() ? subscription.getCreationDate()|date(_T("Y-m-d")) : '',
                     label: _T("Creation date", "activities"),
                     required: true
                 } %}
 
                 {% include "components/forms/date.html.twig" with {
                     id: 'subscription_date',
-                    value: subscription.getSubscriptionDate(),
+                    value: subscription.getSubscriptionDate() ? subscription.getSubscriptionDate()|date(_T("Y-m-d")) : '',
                     label: _T("Subscription date", "activities"),
                     required: true
                 } %}
 
                 {% include "components/forms/date.html.twig" with {
                     id: 'end_date',
-                    value: subscription.getEndDate(),
+                    value: subscription.getEndDate() ? subscription.getEndDate()|date(_T("Y-m-d")) : '',
                     label: _T("End date", "activities"),
                     required: true
                 } %}

@@ -49,7 +49,7 @@ class Subscription extends GaletteTestCase
      */
     public function testEmpty(): void
     {
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history);
 
         $this->assertNull($subscription->getId());
         $this->assertNull($subscription->getActivityId());
@@ -68,31 +68,40 @@ class Subscription extends GaletteTestCase
     }
 
     /**
+     * Errors are empty before any check
+     */
+    public function testErrorsBeforeCheck(): void
+    {
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history);
+        $this->assertSame([], $subscription->getErrors());
+    }
+
+    /**
      * Test add and update
      */
     public function testCrud(): void
     {
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
-        $subscriptions = new \GaletteActivities\Repository\Activities($this->zdb, $this->login, $this->preferences);
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history);
+        $subscriptions = new \GaletteActivities\Repository\Activities($this->zdb, $this->login, $this->history, $this->preferences);
 
         //ensure the table is empty
         $this->assertCount(0, $subscriptions->getList());
 
         //bootstrap data
-        $activity = new \GaletteActivities\Entity\Activity($this->zdb);
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history);
         $data = [
             'name' => 'Activity for subscriptions',
             'comment' => 'Comment ' . $this->seed,
             'price' => 42.0,
         ];
         $this->assertTrue($activity->check($data));
-        $this->assertTrue($activity->store());
+        $activity->store();
 
         $group = new \Galette\Entity\Group();
         $group->setName('Subscribed group');
-        $this->assertTrue($group->store());
+        $group->store();
 
-        $gactivity = new \GaletteActivities\Entity\Activity($this->zdb);
+        $gactivity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history);
         $data = [
             'name' => 'Activity with a group',
             'comment' => 'Comment for group/activity ' . $this->seed,
@@ -100,7 +109,7 @@ class Subscription extends GaletteTestCase
             \Galette\Entity\Group::PK => $group->getId()
         ];
         $this->assertTrue($gactivity->check($data));
-        $this->assertTrue($gactivity->store());
+        $gactivity->store();
 
         $activity_id = $activity->getId();
         $gactivity_id = $gactivity->getId();
@@ -188,7 +197,7 @@ class Subscription extends GaletteTestCase
         $this->assertSame(42.0, $subscription->getAmount());
         $this->assertSame(42.0, $subscription->getAmountFromActivity());
         $this->assertSame([], $subscription->getErrors());
-        $this->assertTrue($subscription->store());
+        $subscription->store();
         $subscription_id = $subscription->getId();
 
         //member is not part of any group
@@ -199,10 +208,6 @@ class Subscription extends GaletteTestCase
         $this->assertSame(42.0, $subscription->getAmount());
         $this->assertSame('2024-08-17', $subscription->getSubscriptionDate());
         $this->assertSame('2025-08-17', $subscription->getEndDate());
-        $this->i18n->changeLanguage('fr_FR');
-        $this->assertSame('17/08/2024', $subscription->getSubscriptionDate());
-        $this->assertSame('17/08/2025', $subscription->getEndDate());
-        $this->i18n->changeLanguage('en_US');
         $this->assertSame('subscription-notpaid', $subscription->getRowClass());
         $this->assertSame($activity_id, $subscription->getActivityId());
         $this->assertSame($member_one->id, $subscription->getMemberId());
@@ -210,7 +215,7 @@ class Subscription extends GaletteTestCase
         $this->assertSame($member_one->id, $subscription->getMember()->id);
 
         //reload
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $subscription_id);
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history, $subscription_id);
         $data += [
             'paid' => 0,
             'payment_amount' => 21.0,
@@ -219,7 +224,7 @@ class Subscription extends GaletteTestCase
         $this->assertTrue($subscription->check($data));
         $this->assertSame(21.0, $subscription->getAmount());
         $this->assertSame(42.0, $subscription->getAmountFromActivity());
-        $this->assertTrue($subscription->store());
+        $subscription->store();
 
         $this->assertFalse($subscription->isPaid());
         $this->assertSame(21.0, $subscription->getAmount());
@@ -228,11 +233,11 @@ class Subscription extends GaletteTestCase
         $this->assertSame('Cash', $subscription->getPaymentMethodName());
 
         //remove subscription
-        $this->assertTrue($subscription->remove());
-        $this->assertFalse((new \GaletteActivities\Entity\Subscription($this->zdb))->load($subscription_id));
+        $subscription->remove();
+        $this->assertNotFound(fn() => (new \GaletteActivities\Entity\Subscription($this->zdb, $this->history))->load($subscription_id));
 
         //create a subscription with a group
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history);
         $data = [
             'activity' => $gactivity_id,
             'member' => $member_one->id,
@@ -241,7 +246,7 @@ class Subscription extends GaletteTestCase
             'comment' => 'Comment ' . $this->seed,
         ];
         $this->assertTrue($subscription->check($data));
-        $this->assertTrue($subscription->store());
+        $subscription->store();
 
         //member is part activity linked group
         $member_one->loadGroups();
@@ -249,7 +254,7 @@ class Subscription extends GaletteTestCase
         $this->assertCount(1, $groups);
 
         //no duplicate on subscriptions
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history);
         $data = [
             'activity' => $gactivity_id,
             'member' => $member_one->id,
@@ -257,13 +262,16 @@ class Subscription extends GaletteTestCase
             'end_date' => (new \DateTime())->modify('+1 year')->format('Y-m-d'),
             'comment' => 'Comment ' . $this->seed,
         ];
-        $this->assertTrue($subscription->check($data));
-        $this->assertFalse($subscription->store());
+        $this->assertFalse($subscription->check($data));
         $this->assertSame(
             [
                 'Subscription already exists for this member and activity'
             ],
             $subscription->getErrors()
+        );
+        $this->expectLogEntry(
+            \Analog\Analog::ERROR,
+            'Subscription already exists for this member and activity',
         );
     }
 
@@ -272,8 +280,9 @@ class Subscription extends GaletteTestCase
      */
     public function testLoadError(): void
     {
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
-        $this->assertFalse($subscription->load(999));
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history);
+        $this->expectException(\GaletteActivities\NotFoundException::class);
+        $subscription->load(999);
     }
 
     /**
@@ -288,14 +297,14 @@ class Subscription extends GaletteTestCase
         int $member,
         ?\GaletteActivities\Entity\Subscription $subscription = null
     ): \GaletteActivities\Entity\Subscription {
-        $subscription ??= new \GaletteActivities\Entity\Subscription($this->zdb);
+        $subscription ??= new \GaletteActivities\Entity\Subscription($this->zdb, $this->history);
         $this->assertTrue($subscription->check([
             'activity' => $activity,
             'member' => $member,
             'subscription_date' => date('Y-m-d'),
             'end_date' => date('Y-m-d', strtotime('+1 year')),
         ]));
-        $this->assertTrue($subscription->store());
+        $subscription->store();
         return $subscription;
     }
 
@@ -323,15 +332,15 @@ class Subscription extends GaletteTestCase
         $this->insertSubscription($activity, $member_one->id);
 
         $this->zdb->connection->beginTransaction();
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
-        $this->assertTrue($subscription->check([
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history);
+        $this->assertFalse($subscription->check([
             'activity' => $activity,
             'member' => $member_one->id,
             'subscription_date' => date('Y-m-d'),
             'end_date' => date('Y-m-d', strtotime('+1 year')),
         ]));
-        $this->assertFalse($subscription->store());
         $this->assertSame(['Subscription already exists for this member and activity'], $subscription->getErrors());
+        $this->expectLogEntry(\Analog\Analog::ERROR, 'Subscription already exists for this member and activity');
 
         //transaction is still usable
         $this->insertActivity('Hiking');
@@ -354,7 +363,7 @@ class Subscription extends GaletteTestCase
         $this->assertTrue($this->isInGroup($climbing_group->getId(), $member_one->id));
         $this->assertFalse($this->isInGroup($hiking_group->getId(), $member_one->id));
 
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, (int)$subscription->getId());
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history, (int)$subscription->getId());
         $this->storeSubscription($hiking, $member_one->id, $subscription);
         $this->assertTrue($this->isInGroup($hiking_group->getId(), $member_one->id));
         $this->assertTrue($this->isInGroup($climbing_group->getId(), $member_one->id));
@@ -362,7 +371,7 @@ class Subscription extends GaletteTestCase
 
         //storing again without changing activity does not join the group again
         $this->zdb->execute($this->zdb->delete(\Galette\Entity\Group::GROUPSUSERS_TABLE));
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, (int)$subscription->getId());
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history, (int)$subscription->getId());
         $this->storeSubscription($hiking, $member_one->id, $subscription);
         $this->assertFalse($this->isInGroup($hiking_group->getId(), $member_one->id));
         $this->assertSame(1, $this->countSubscriptions($hiking));
@@ -376,7 +385,7 @@ class Subscription extends GaletteTestCase
      */
     private function expectInvalid(array $data, array $errors): void
     {
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history);
         $this->assertFalse($subscription->check($data + [
             'subscription_date' => date('Y-m-d'),
             'end_date' => date('Y-m-d', strtotime('+1 year')),
@@ -416,7 +425,7 @@ class Subscription extends GaletteTestCase
         );
 
         //same day is fine
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history);
         $this->assertTrue($subscription->check([
             'activity' => $activity,
             'member' => $member_one->id,
@@ -441,7 +450,7 @@ class Subscription extends GaletteTestCase
             'save' => '1',
         ];
 
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history);
         $this->assertTrue($subscription->check($data + ['payment_amount' => '12,50']));
         $this->assertSame(12.5, $subscription->getAmount());
 
@@ -451,13 +460,13 @@ class Subscription extends GaletteTestCase
         //activity price, from fixtures
         $this->assertTrue($subscription->check($data + ['payment_amount' => '']));
         $this->assertSame(10.0, $subscription->getAmount());
-        $this->assertTrue($subscription->store());
+        $subscription->store();
 
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, (int)$subscription->getId());
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history, (int)$subscription->getId());
         $this->assertTrue($subscription->check($data + ['payment_amount' => '']));
         $this->assertNull($subscription->getAmount());
-        $this->assertTrue($subscription->store());
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, (int)$subscription->getId());
+        $subscription->store();
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history, (int)$subscription->getId());
         $this->assertNull($subscription->getAmount());
 
         $this->expectInvalid($data + ['payment_amount' => 'twelve'], ['Amount must be a number.']);

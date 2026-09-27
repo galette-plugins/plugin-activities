@@ -12,11 +12,13 @@ namespace GaletteActivities\Entity;
 
 use ArrayObject;
 use Galette\Core\Db;
+use Galette\Core\History;
 use Galette\Entity\Adherent;
 use Galette\Entity\Group;
 use Galette\Entity\PaymentType;
 use Analog\Analog;
 use Galette\Helpers\EntityHelper;
+use GaletteActivities\NotFoundException;
 
 /**
  * Subscription entity
@@ -26,18 +28,20 @@ use Galette\Helpers\EntityHelper;
 class Subscription
 {
     use EntityHelper;
+    use EntityTrait;
 
     public const string TABLE = 'subscriptions';
     public const string PK = 'id_subscription';
 
     private Db $zdb;
+    private History $history;
     /** @var array<string> */
-    private array $errors;
+    private array $errors = [];
 
-    private int $id;
-    private int $id_activity;
+    private ?int $id = null;
+    private ?int $id_activity = null;
     private ?Activity $activity = null;
-    private int $id_member;
+    private ?int $id_member = null;
     private ?Adherent $member = null;
     //activity and member as stored in database
     private ?int $stored_activity = null;
@@ -53,49 +57,23 @@ class Subscription
     /**
      * Default constructor
      *
-     * @param Db                                  $zdb  Database instance
-     * @param null|int|ArrayObject<string, mixed> $args Either a ResultSet row or its id for to load
-     *                                                  a specific subscription, or null to just
-     *                                                  instanciate object
+     * @param Db                                  $zdb     Database instance
+     * @param History                             $history History instance
+     * @param null|int|ArrayObject<string, mixed> $args    Either a ResultSet row or its id for to load
+     *                                                     a specific subscription, or null to just
+     *                                                     instanciate object
      */
-    public function __construct(Db $zdb, int|ArrayObject|null $args = null)
+    public function __construct(Db $zdb, History $history, int|ArrayObject|null $args = null)
     {
         $this->zdb = $zdb;
+        $this->history = $history;
         $this->setFields();
 
         $this->creation_date = date("Y-m-d");
         if (is_int($args)) {
             $this->load($args);
-        } elseif (is_object($args)) {
+        } elseif ($args !== null) {
             $this->loadFromRS($args);
-        }
-    }
-
-    /**
-     * Loads a subscription from its id
-     *
-     * @param int $id the identifiant for the subscription to load
-     */
-    public function load(int $id): bool
-    {
-        try {
-            $select = $this->zdb->select($this->getTableName());
-            $select->where([self::PK => $id]);
-
-            $results = $this->zdb->execute($select);
-
-            if ($results->count() > 0) {
-                $this->loadFromRS($results->current());
-                return true;
-            } else {
-                return false;
-            }
-        } catch (\Exception $e) {
-            Analog::log(
-                'Cannot load subscription form id `' . $id . '` | ' . $e->getMessage(),
-                Analog::WARNING
-            );
-            throw $e;
         }
     }
 
@@ -107,55 +85,17 @@ class Subscription
     private function loadFromRS(ArrayObject $r): void
     {
         $this->id = (int)$r['id_subscription'];
-        $this->setActivity((int)$r[Activity::PK]);
-        $this->setMember((int)$r[Adherent::PK]);
+        $this->id_activity = (int)$r[Activity::PK];
+        $this->id_member = (int)$r[Adherent::PK];
         $this->stored_activity = $this->id_activity;
         $this->stored_member = $this->id_member;
         $this->paid = (bool)$r['is_paid'];
-        if ($r['payment_amount'] !== null) {
-            $this->payment_amount = (float)$r['payment_amount'];
-        }
+        $this->payment_amount = $r['payment_amount'] === null ? null : (float)$r['payment_amount'];
         $this->payment_method = (int)$r['payment_method'];
         $this->creation_date = $r['creation_date'];
         $this->subscription_date = $r['subscription_date'];
         $this->end_date = $r['end_date'];
         $this->comment = $r['comment'] ?? '';
-    }
-
-    /**
-     * Remove specified subscription
-     */
-    public function remove(): bool
-    {
-        $transaction = false;
-
-        try {
-            if (!$this->zdb->connection->inTransaction()) {
-                $this->zdb->connection->beginTransaction();
-                $transaction = true;
-            }
-
-            $delete = $this->zdb->delete($this->getTableName());
-            $delete->where([self::PK => $this->id]);
-            $this->zdb->execute($delete);
-
-            //commit all changes
-            if ($transaction) {
-                $this->zdb->connection->commit();
-            }
-
-            return true;
-        } catch (\Exception $e) {
-            if ($transaction) {
-                $this->zdb->connection->rollBack();
-            }
-            Analog::log(
-                'Unable to delete subscription '
-                . ' (' . $this->id . ') |' . $e->getMessage(),
-                Analog::ERROR
-            );
-            return false;
-        }
     }
 
     /**
@@ -171,8 +111,9 @@ class Subscription
         if (!isset($values['activity']) || empty($values['activity']) || $values['activity'] == -1) {
             $this->errors[] = _T('Activity is mandatory', 'activities');
         } else {
-            $this->setActivity((int)$values['activity']);
-            if ($this->activity?->getId() === null) {
+            try {
+                $this->useActivity(new Activity($this->zdb, $this->history, (int)$values['activity']));
+            } catch (NotFoundException) {
                 $this->errors[] = sprintf(
                     //TRANS: %1$s is the activity ID
                     _T('No activity #%1$s.', 'activities'),
@@ -199,10 +140,10 @@ class Subscription
             } else {
                 $this->errors[] = _T('Amount must be a number.', 'activities');
             }
-        } elseif ($amount === null || empty($this->id)) {
+        } elseif ($amount === null || $this->id === null) {
             //new subscriptions default to activity price; existing ones can be cleared
-            if (isset($values['save']) && $this->activity !== null) {
-                $this->payment_amount = $this->activity->getPrice();
+            if (isset($values['save']) && $this->getActivity() !== null) {
+                $this->payment_amount = $this->getActivity()->getPrice();
             }
         } else {
             $this->payment_amount = null;
@@ -251,6 +192,10 @@ class Subscription
             $this->errors[] = _T('End date must not be before subscription date.', 'activities');
         }
 
+        if (count($this->errors) === 0 && $this->isDuplicate()) {
+            $this->errors[] = _T('Subscription already exists for this member and activity', 'activities');
+        }
+
         if (count($this->errors) > 0) {
             Analog::log(
                 'Some errors has been threw attempting to edit/store a subscription' . "\n"
@@ -278,22 +223,9 @@ class Subscription
     /**
      * Store the subscription
      */
-    public function store(): bool
+    public function store(): void
     {
-        global $hist;
-
-        if ($this->isDuplicate()) {
-            //checked before any query: on PostgreSQL, a failing query aborts the whole transaction
-            $this->errors[] = _T('Subscription already exists for this member and activity', 'activities');
-            return false;
-        }
-
-        $transaction = false;
-        try {
-            if (!$this->zdb->connection->inTransaction()) {
-                $this->zdb->connection->beginTransaction();
-                $transaction = true;
-            }
+        $this->transactional(function (): void {
             $values = [
                 Activity::PK => $this->id_activity,
                 Adherent::PK => $this->id_member,
@@ -307,35 +239,26 @@ class Subscription
                 'comment' => $this->comment
             ];
 
-            if (empty($this->id)) {
+            if ($this->id === null) {
                 //we're inserting a new subscription
                 $insert = $this->zdb->insert($this->getTableName());
                 $insert->values($values);
                 $add = $this->zdb->execute($insert);
-                if ($add->count() > 0) {
-                    if ($this->zdb->isPostgres()) {
-                        /** @phpstan-ignore-next-line */
-                        $this->id = (int)$this->zdb->driver->getLastGeneratedValue(
-                            PREFIX_DB . ACTIVITIES_PREFIX . self::TABLE . '_id_seq'
-                        );
-                    } else {
-                        $this->id = (int)$this->zdb->driver->getLastGeneratedValue();
-                    }
-
-                    // logging
-                    $hist->add(
-                        _T("Subscription added", "activities"),
-                        $this->getActivity()->getName()
-                    );
-                } else {
-                    $hist->add(_T("Fail to add new subscription.", "activities"));
-                    throw new \Exception(
+                if ($add->count() === 0) {
+                    $this->history->add(_T("Fail to add new subscription.", "activities"));
+                    throw new \RuntimeException(
                         'An error occurred inserting new subscription!'
                     );
                 }
+                $this->id = $this->getLastInsertId();
+
+                // logging
+                $this->history->add(
+                    _T("Subscription added", "activities"),
+                    $this->getActivity()?->getName() ?? ''
+                );
             } else {
                 //we're editing an existing subscription
-                $values[self::PK] = $this->id;
                 $update = $this->zdb->update($this->getTableName());
                 $update
                     ->set($values)
@@ -346,7 +269,7 @@ class Subscription
                 //edit == 0 does not mean there were an error, but that there
                 //were nothing to change
                 if ($edit->count() > 0) {
-                    $hist->add(
+                    $this->history->add(
                         _T("Subscription updated", "activities")
                     );
                 }
@@ -356,30 +279,9 @@ class Subscription
             if ($this->id_activity !== $this->stored_activity || $this->id_member !== $this->stored_member) {
                 $this->joinActivityGroup();
             }
-
-            if ($transaction) {
-                $this->zdb->connection->commit();
-            }
-            $this->stored_activity = $this->id_activity;
-            $this->stored_member = $this->id_member;
-            return true;
-        } catch (\OverflowException $e) {
-            if ($transaction) {
-                $this->zdb->connection->rollBack();
-            }
-            $this->errors[] = _T('Subscription already exists for this member and activity', 'activities');
-            return false;
-        } catch (\Exception $e) {
-            if ($transaction) {
-                $this->zdb->connection->rollBack();
-            }
-            Analog::log(
-                'Something went wrong :\'( | ' . $e->getMessage() . "\n"
-                . $e->getTraceAsString(),
-                Analog::ERROR
-            );
-            throw $e;
-        }
+        });
+        $this->stored_activity = $this->id_activity;
+        $this->stored_member = $this->id_member;
     }
 
     /**
@@ -392,7 +294,7 @@ class Subscription
             Activity::PK => $this->id_activity,
             Adherent::PK => $this->id_member
         ]);
-        if (!empty($this->id)) {
+        if ($this->id !== null) {
             $select->where->notEqualTo(self::PK, $this->id);
         }
         return $this->zdb->execute($select)->count() > 0;
@@ -420,11 +322,11 @@ class Subscription
     }
 
     /**
-     * Get activity id
+     * Get subscription id
      */
     public function getId(): ?int
     {
-        return $this->id ?? null;
+        return $this->id;
     }
 
     /**
@@ -432,18 +334,33 @@ class Subscription
      */
     public function getActivityId(): ?int
     {
-        return $this->id_activity ?? null;
+        return $this->id_activity;
     }
 
     /**
-     * Get activity
+     * Get activity, loaded once
      */
     public function getActivity(): ?Activity
     {
-        if (isset($this->id_activity)) {
-            $this->activity = new Activity($this->zdb, $this->id_activity);
+        if ($this->id_activity === null) {
+            return null;
+        }
+        if ($this->activity?->getId() !== $this->id_activity) {
+            $this->activity = new Activity($this->zdb, $this->history, $this->id_activity);
         }
         return $this->activity;
+    }
+
+    /**
+     * Use an already loaded activity
+     *
+     * @param Activity $activity Activity
+     */
+    public function useActivity(Activity $activity): self
+    {
+        $this->id_activity = $activity->getId();
+        $this->activity = $activity;
+        return $this;
     }
 
     /**
@@ -451,11 +368,7 @@ class Subscription
      */
     public function getAmountFromActivity(): ?float
     {
-        $activity = $this->getActivity();
-        if ($activity !== null) {
-            return $this->getActivity()->getPrice();
-        }
-        return null;
+        return $this->getActivity()?->getPrice();
     }
 
     /**
@@ -463,18 +376,33 @@ class Subscription
      */
     public function getMemberId(): ?int
     {
-        return $this->id_member ?? null;
+        return $this->id_member;
     }
 
     /**
-     * Get member
+     * Get member, loaded once
      */
     public function getMember(): ?Adherent
     {
-        if (isset($this->id_member)) {
-            $this->member = new Adherent($this->zdb, $this->id_member);
+        if ($this->id_member === null) {
+            return null;
+        }
+        if ($this->member?->id !== $this->id_member) {
+            $this->member = new Adherent($this->zdb, $this->id_member, false);
         }
         return $this->member;
+    }
+
+    /**
+     * Use an already loaded member
+     *
+     * @param Adherent $member Member
+     */
+    public function useMember(Adherent $member): self
+    {
+        $this->id_member = $member->id;
+        $this->member = $member;
+        return $this;
     }
 
     /**
@@ -511,45 +439,27 @@ class Subscription
     }
 
     /**
-     * Get creation date
-     *
-     * @param bool $formatted Return date formatted, raw if false
+     * Get creation date, as Y-m-d
      */
-    public function getCreationDate(bool $formatted = true): string
+    public function getCreationDate(): string
     {
-        return $this->getDate('creation_date', $formatted) ?? '';
+        return $this->creation_date ?? '';
     }
 
     /**
-     * Get subscription date
-     *
-     * @param bool $formatted Return date formatted, raw if false
+     * Get subscription date, as Y-m-d
      */
-    public function getSubscriptionDate(bool $formatted = true): string
+    public function getSubscriptionDate(): string
     {
-        return $this->getDate('subscription_date', $formatted) ?? '';
+        return $this->subscription_date ?? '';
     }
 
     /**
-     * Get end date
-     *
-     * @param bool $formatted Return date formatted, raw if false
+     * Get end date, as Y-m-d
      */
-    public function getEndDate(bool $formatted = true): string
+    public function getEndDate(): string
     {
-        return $this->getDate('end_date', $formatted) ?? '';
-    }
-
-    /**
-     * Set activity
-     *
-     * @param int $activity Activity id
-     */
-    public function setActivity(int $activity): self
-    {
-        $this->id_activity = $activity;
-        $this->activity = new Activity($this->zdb, $this->id_activity);
-        return $this;
+        return $this->end_date ?? '';
     }
 
     /**
@@ -560,16 +470,7 @@ class Subscription
     public function setMember(int $member): self
     {
         $this->id_member = $member;
-        $this->member = new Adherent($this->zdb, $this->id_member, false);
         return $this;
-    }
-
-    /**
-     * Get table's name
-     */
-    protected function getTableName(): string
-    {
-        return ACTIVITIES_PREFIX . self::TABLE;
     }
 
     /**
@@ -641,15 +542,5 @@ class Subscription
         ];
 
         return $this;
-    }
-
-    /**
-     * Get errors
-     *
-     * @return array<string>
-     */
-    public function getErrors(): array
-    {
-        return $this->errors;
     }
 }

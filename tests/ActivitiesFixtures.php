@@ -125,6 +125,21 @@ trait ActivitiesFixtures
     }
 
     /**
+     * Assert an entity does not exist
+     *
+     * @param callable $load Entity loading
+     */
+    protected function assertNotFound(callable $load): void
+    {
+        try {
+            $load();
+            $this->fail('Entity should not exist');
+        } catch (\GaletteActivities\NotFoundException) {
+            $this->addToAssertionCount(1);
+        }
+    }
+
+    /**
      * Count subscriptions of an activity
      *
      * @param int $activity Activity ID

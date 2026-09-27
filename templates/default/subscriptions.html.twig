@@ -196,8 +196,8 @@
                             {{ subscription.getMember().sfullname }}
                         </a>
                     </td>
-                    <td class="{{ rclass }} collapsing" data-col-label="{{ _T("Subscription date", "activities") }}">{{ subscription.getSubscriptionDate() }}</td>
-                    <td class="{{ rclass }} collapsing" data-col-label="{{ _T("End date", "activities") }}">{{ subscription.getEndDate() }}</td>
+                    <td class="{{ rclass }} collapsing" data-col-label="{{ _T("Subscription date", "activities") }}">{{ subscription.getSubscriptionDate()|date(_T("Y-m-d")) }}</td>
+                    <td class="{{ rclass }} collapsing" data-col-label="{{ _T("End date", "activities") }}">{{ subscription.getEndDate()|date(_T("Y-m-d")) }}</td>
                     <td class="{{ rclass }}" data-col-label="{{ _T("Amount", "activities") }}">{{ subscription.getAmount() }}</td>
                     <td class="{{ rclass }} center collapsing" data-col-label="{{ _T("Paid", "activities") }}">
                         <i class="money bill wave{% if not subscription.isPaid() %} red{% endif %} icon tooltip" data-html="{% if subscription.isPaid() %}{{ _T("Paid", "activities") }}{% else %}{{ _T("Not paid", "activities") }}{% endif %}"></i>

@@ -180,6 +180,22 @@ class SubscriptionsController extends GaletteRoutingTestCase
     }
 
     /**
+     * Removal of an unknown subscription is not confirmed
+     */
+    public function testConfirmRemoveUnknownSubscription(): void
+    {
+        $this->logSuperAdmin();
+        $id = $this->insertSubscription($this->insertActivity('Climbing'), $this->getMemberOne()->id) + 1000;
+
+        $test_response = $this->app->handle(
+            $this->createRequest('activities_remove_subscription', ['id' => (string)$id])
+        );
+        $this->assertSame(200, $test_response->getStatusCode());
+        $this->assertStringContainsString('No subscription #' . $id . '.', (string)$test_response->getBody());
+        $this->expectNoLogEntry();
+    }
+
+    /**
      * Member filter is optional, and can be cleared
      */
     public function testMemberFilter(): void
@@ -300,7 +316,6 @@ class SubscriptionsController extends GaletteRoutingTestCase
             ['Location' => [$this->routeparser->urlFor('activities_subscription_add')]],
             $test_response->getHeaders()
         );
-        $this->expectLogEntry(\Analog\Analog::ERROR, 'Subscription date is mandatory');
         $this->expectNoLogEntry();
         $this->expectFlashData(['warning_detected' => ['Do not forget to store the subscription']]);
         $this->assertSame(0, $this->countSubscriptions($activity));
@@ -311,6 +326,8 @@ class SubscriptionsController extends GaletteRoutingTestCase
         $this->assertMatchesRegularExpression('/<option\s+value="' . $activity . '"\s+selected="selected"/', $body);
         $this->assertStringContainsString('placeholder="12.5"', $body);
         $this->assertFalse(isset($this->session->plugin_activities_subscription));
+        //reloaded form is checked, not stored
+        $this->expectLogEntry(\Analog\Analog::ERROR, 'Subscription date is mandatory');
         $this->expectNoLogEntry();
     }
 
@@ -346,7 +363,7 @@ class SubscriptionsController extends GaletteRoutingTestCase
         $this->expectNoLogEntry();
         $this->expectFlashData(['success_detected' => ['Subscription has been modified.']]);
 
-        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $id);
+        $subscription = new \GaletteActivities\Entity\Subscription($this->zdb, $this->history, $id);
         $this->assertSame('Changed comment', $subscription->getComment());
         $this->assertSame(7.0, $subscription->getAmount());
         $this->assertTrue($subscription->isPaid());

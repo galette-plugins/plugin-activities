@@ -10,29 +10,54 @@ declare(strict_types=1);
 
 namespace GaletteActivities\Controllers\Crud;
 
-use Galette\Controllers\Crud\AbstractPluginController;
+use Galette\Core\Pagination;
 use Galette\Repository\Groups;
 use GaletteActivities\Filters\ActivitiesList;
 use GaletteActivities\Entity\Activity;
-use GaletteActivities\Entity\Subscription;
+use GaletteActivities\NotFoundException;
 use GaletteActivities\Repository\Activities;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
-use DI\Attribute\Inject;
 
 /**
  * Activities controller
  *
  * @author Johan Cwiklinski <johan@x-tnd.be>
+ *
+ * @extends AbstractController<ActivitiesList>
  */
 
-class ActivitiesController extends AbstractPluginController
+class ActivitiesController extends AbstractController
 {
     /**
-     * @var array<string,mixed>
+     * Entity name, for session keys and logs
      */
-    #[Inject("Plugin Galette Activities")]
-    protected array $module_info;
+    protected function getEntityName(): string
+    {
+        return 'activity';
+    }
+
+    /**
+     * Create empty list filters
+     */
+    protected function createFilters(): Pagination
+    {
+        return new ActivitiesList();
+    }
+
+    /**
+     * Get the message for an activity that does not exist
+     *
+     * @param int $id Requested activity identifier
+     */
+    protected function getNotFoundMessage(int $id): string
+    {
+        return sprintf(
+            //TRANS: %1$s is the activity ID
+            _T('No activity #%1$s.', 'activities'),
+            $id
+        );
+    }
 
     // CRUD - Create
 
@@ -63,31 +88,13 @@ class ActivitiesController extends AbstractPluginController
      */
     public function list(Request $request, Response $response, ?string $option = null, string|int|null $value = null): Response
     {
-        $filter_name = $this->getFilterName($this->getDefaultFilterName());
-        if (isset($this->session->$filter_name)) {
-            $filters = $this->session->$filter_name;
-        } else {
-            $filters = new ActivitiesList();
-        }
-
-        if ($option !== null) {
-            switch ($option) {
-                case 'page':
-                    $filters->current_page = (int)$value;
-                    break;
-                case 'order':
-                    $filters->orderby = $value;
-                    break;
-            }
-        }
-
-        $activities = new Activities($this->zdb, $this->login, $this->preferences, $filters);
+        $filters = $this->getFilters($option, $value);
+        $activities = new Activities($this->zdb, $this->login, $this->history, $this->preferences, $filters);
         $list = $activities->getList();
 
         //assign pagination variables to the template and add pagination links
         $filters->setViewPagination($this->routeparser, $this->view, false);
-
-        $this->session->$filter_name = $filters;
+        $this->storeFilters($filters);
 
         // display page
         $this->view->render(
@@ -104,36 +111,6 @@ class ActivitiesController extends AbstractPluginController
         return $response;
     }
 
-    /**
-     * Filtering
-     */
-    public function filter(Request $request, Response $response): Response
-    {
-        $post = $request->getParsedBody();
-        $filter_name = $this->getFilterName($this->getDefaultFilterName());
-        if (isset($this->session->$filter_name)) {
-            $filters = $this->session->$filter_name;
-        } else {
-            $filters = new ActivitiesList();
-        }
-
-        //reinitialize filters
-        if (isset($post['clear_filter'])) {
-            $filters->reinit();
-        } else {
-            //number of rows to show
-            if (isset($post['nbshow'])) {
-                $filters->show = $post['nbshow'];
-            }
-        }
-
-        $this->session->$filter_name = $filters;
-
-        return $response
-            ->withStatus(303)
-            ->withHeader('Location', $this->routeparser->urlFor('activities_activities'));
-    }
-
     // /CRUD - Read
     // CRUD - Update
 
@@ -145,30 +122,25 @@ class ActivitiesController extends AbstractPluginController
      */
     public function edit(Request $request, Response $response, ?int $id = null, string $action = 'edit'): Response
     {
-        $activity = $this->session->plugin_activities_activity ?? null;
-        if ($activity !== null) {
-            unset($this->session->plugin_activities_activity);
-        } else {
-            $activity = new Activity($this->zdb);
+        $activity = new Activity($this->zdb, $this->history);
+
+        if ($id !== null) {
+            try {
+                $activity->load($id);
+            } catch (NotFoundException) {
+                return $this->redirectNotFound($response, $id);
+            }
         }
 
-        if ($id !== null && $activity->getId() != $id && !$activity->load($id)) {
-            $this->flash->addMessage(
-                'error_detected',
-                sprintf(
-                    //TRANS: %1$s is the activity ID
-                    _T('No activity #%1$s.', 'activities'),
-                    $id
-                )
-            );
-            return $response
-                ->withStatus(302)
-                ->withHeader('Location', $this->routeparser->urlFor('activities_activities'));
+        //values posted before an error
+        $values = $this->getPostedValues($activity->getId());
+        if ($values !== null) {
+            $activity->check($values);
         }
 
         // template variable declaration
         $title = _T("Activity", "activities");
-        if ($activity->getId() != '') {
+        if ($activity->getId() !== null) {
             $title .= ' (' . _T("modification") . ')';
         } else {
             $title .= ' (' . _T("creation") . ')';
@@ -203,83 +175,45 @@ class ActivitiesController extends AbstractPluginController
     public function doEdit(Request $request, Response $response, ?int $id = null, string $action = 'edit'): Response
     {
         $post = $request->getParsedBody();
-        $activity = new Activity($this->zdb);
-        if (isset($post['id']) && !empty($post['id'])) {
-            $activity->load((int)$post['id']);
-        }
-
-        $success_detected = [];
-        $error_detected = [];
-
-        // Validation
-        $valid = $activity->check($post);
-        if ($valid !== true) {
-            $error_detected = array_merge($error_detected, $activity->getErrors());
-        }
-
-        if (count($error_detected) == 0) {
-            //all goes well, we can proceed
-
-            $new = false;
-            if ($activity->getId() == '') {
-                $new = true;
-            }
+        $activity = new Activity($this->zdb, $this->history);
+        if (!empty($post['id'])) {
             try {
-                $store = $activity->store();
-            } catch (\Throwable) {
-                //already logged by the entity
-                $store = false;
-            }
-            if ($store === true) {
-                //member has been stored :)
-                if ($new) {
-                    $success_detected[] = _T("New activity has been successfully added.", "activities");
-                } else {
-                    $success_detected[] = _T("Activity has been modified.", "activities");
-                }
-            } else {
-                //something went wrong :'(
-                $error_detected[] = _T("An error occurred while storing the activity.", "activities");
+                $activity->load((int)$post['id']);
+            } catch (NotFoundException) {
+                return $this->redirectNotFound($response, (int)$post['id']);
             }
         }
 
-        if (count($error_detected) > 0) {
-            foreach ($error_detected as $error) {
-                $this->flash->addMessage(
-                    'error_detected',
-                    $error
-                );
-            }
+        $successes = [];
+        $errors = [];
+        if ($activity->check($post)) {
+            $this->storeEntity(
+                $activity,
+                _T("New activity has been successfully added.", "activities"),
+                _T("Activity has been modified.", "activities"),
+                _T("An error occurred while storing the activity.", "activities"),
+                $successes,
+                $errors
+            );
+        } else {
+            $errors = $activity->getErrors();
         }
 
-        if (count($success_detected) > 0) {
-            foreach ($success_detected as $success) {
-                $this->flash->addMessage(
-                    'success_detected',
-                    $success
-                );
-            }
-        }
-
-        if (count($error_detected) == 0) {
+        if (count($errors) === 0) {
             $redirect_url = $this->routeparser->urlFor('activities_activities');
         } else {
-            //store entity in session
-            $this->session->plugin_activities_activity = $activity;
-
-            if ($activity->getId()) {
-                $redirect_url = $this->routeparser->urlFor(
-                    'activities_activity_edit',
-                    ['id' => (string)$activity->getId()]
-                );
-            } else {
-                $redirect_url = $this->routeparser->urlFor('activities_activity_add');
-            }
+            $this->keepPostedValues($activity->getId(), $post);
+            $redirect_url = $activity->getId() !== null
+                ? $this->routeparser->urlFor('activities_activity_edit', ['id' => (string)$activity->getId()])
+                : $this->routeparser->urlFor('activities_activity_add');
         }
 
-        return $response
-            ->withStatus(303)
-            ->withHeader('Location', $redirect_url);
+        return $this->redirect(
+            response: $response,
+            redirect_url: $redirect_url,
+            successes: $successes,
+            errors: $errors
+        );
     }
 
     // /CRUD - Update
@@ -315,7 +249,11 @@ class ActivitiesController extends AbstractPluginController
      */
     public function confirmRemoveTitle(array $args): string
     {
-        $activity = new Activity($this->zdb, (int)$args['id']);
+        try {
+            $activity = new Activity($this->zdb, $this->history, (int)$args['id']);
+        } catch (NotFoundException) {
+            return $this->getNotFoundMessage((int)$args['id']);
+        }
         return sprintf(
             //TRANS %1$s is activity name
             _T('Remove activity %1$s', 'activities'),
@@ -332,9 +270,11 @@ class ActivitiesController extends AbstractPluginController
     {
         $params = parent::getconfirmDeleteParams($request);
 
-        $select = $this->zdb->select(ACTIVITIES_PREFIX . Subscription::TABLE);
-        $select->where([Activity::PK => (int)$params['data']['id']]);
-        $count = $this->zdb->execute($select)->count();
+        try {
+            $count = (new Activity($this->zdb, $this->history, (int)$params['data']['id']))->countSubscriptions();
+        } catch (NotFoundException) {
+            $count = 0;
+        }
         if ($count > 0) {
             $params['message'] = sprintf(
                 _Tn(
@@ -359,8 +299,9 @@ class ActivitiesController extends AbstractPluginController
      */
     protected function doDelete(array $args, array $post): bool
     {
-        $activity = new Activity($this->zdb, (int)$args['id']);
-        return $activity->remove();
+        $activity = new Activity($this->zdb, $this->history, (int)$args['id']);
+        $activity->remove();
+        return true;
     }
 
     // /CRUD - Delete

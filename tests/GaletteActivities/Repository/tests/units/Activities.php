@@ -43,7 +43,7 @@ class Activities extends GaletteTestCase
      */
     private function getListNames(ActivitiesList $filters): array
     {
-        $activities = new \GaletteActivities\Repository\Activities($this->zdb, $this->login, $this->preferences, $filters);
+        $activities = new \GaletteActivities\Repository\Activities($this->zdb, $this->login, $this->history, $this->preferences, $filters);
         $names = [];
         foreach ($activities->getList() as $activity) {
             $names[] = $activity->getName();
