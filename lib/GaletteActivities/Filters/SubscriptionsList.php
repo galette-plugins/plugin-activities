@@ -31,7 +31,6 @@ use GaletteActivities\Repository\Subscriptions;
  * @property int        $payment_type_filter
  * @property int        $date_field
  * @property array<int> $selected
- * @property string     $query
  */
 class SubscriptionsList extends Pagination
 {
@@ -41,18 +40,17 @@ class SubscriptionsList extends Pagination
     public const int DATE_SUBSCRIPTION = 1;
     public const int DATE_CREATION = 2;
     //filters
-    private string|int|null $activity_filter;
-    private string|int|null $member_filter;
+    private ?int $activity_filter;
+    private ?int $member_filter;
 
-    private int|string $paid_filter;
+    private int $paid_filter;
     private int $payment_type_filter;
     private ?int $date_field = null;
-    private ?string $start_date_filter;
-    private ?string $end_date_filter;
+    private ?string $start_date_filter; //@phpstan-ignore property.unusedType (assigned by DatesHelper::setFilterDate())
+    private ?string $end_date_filter; //@phpstan-ignore property.unusedType (assigned by DatesHelper::setFilterDate())
 
     /** @var array<int> */
     private array $selected;
-    private string $query;
 
     /** @var array<string> */
     protected array $list_fields = [
@@ -188,13 +186,19 @@ class SubscriptionsList extends Pagination
                     //empty means no filter
                     $this->$name = ($value === null || $value === '') ? null : (int)$value;
                     break;
+                case 'paid_filter':
                 case 'payment_type_filter':
                 case 'date_field':
                     $this->$name = (int)$value;
                     break;
                 default:
-                    $this->$name = $value;
-                    break;
+                    throw new \RuntimeException(
+                        sprintf(
+                            'Unable to set property "%s::%s"!',
+                            __CLASS__,
+                            $name
+                        )
+                    );
             }
         }
     }

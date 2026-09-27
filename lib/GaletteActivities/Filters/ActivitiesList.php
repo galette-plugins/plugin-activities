@@ -18,10 +18,7 @@ use GaletteActivities\Repository\Activities;
  * Activities lists filters and paginator
  *
  * @author Johan Cwiklinski <johan@x-tnd.be>
- *
- * @property string $query
  */
-
 class ActivitiesList extends Pagination
 {
     /**
