@@ -53,10 +53,10 @@ class Subscription
     /**
      * Default constructor
      *
-     * @param Db                                      $zdb  Database instance
-     * @param null|int|ArrayObject<string,int|string> $args Either a ResultSet row or its id for to load
-     *                                                      a specific subscription, or null to just
-     *                                                      instanciate object
+     * @param Db                                  $zdb  Database instance
+     * @param null|int|ArrayObject<string, mixed> $args Either a ResultSet row or its id for to load
+     *                                                  a specific subscription, or null to just
+     *                                                  instanciate object
      */
     public function __construct(Db $zdb, int|ArrayObject|null $args = null)
     {
@@ -102,24 +102,24 @@ class Subscription
     /**
      * Populate object from a resultset row
      *
-     * @param ArrayObject<string, int|string> $r the resultset row
+     * @param ArrayObject<string, mixed> $r the resultset row
      */
     private function loadFromRS(ArrayObject $r): void
     {
-        $this->id = (int)$r->id_subscription;
-        $this->setActivity((int)$r->{Activity::PK});
-        $this->setMember((int)$r->{Adherent::PK});
+        $this->id = (int)$r['id_subscription'];
+        $this->setActivity((int)$r[Activity::PK]);
+        $this->setMember((int)$r[Adherent::PK]);
         $this->stored_activity = $this->id_activity;
         $this->stored_member = $this->id_member;
-        $this->paid = (bool)$r->is_paid;
-        if ($r->payment_amount !== null) {
-            $this->payment_amount = (float)$r->payment_amount;
+        $this->paid = (bool)$r['is_paid'];
+        if ($r['payment_amount'] !== null) {
+            $this->payment_amount = (float)$r['payment_amount'];
         }
-        $this->payment_method = (int)$r->payment_method;
-        $this->creation_date = $r->creation_date;
-        $this->subscription_date = $r->subscription_date;
-        $this->end_date = $r->end_date;
-        $this->comment = $r->comment ?? '';
+        $this->payment_method = (int)$r['payment_method'];
+        $this->creation_date = $r['creation_date'];
+        $this->subscription_date = $r['subscription_date'];
+        $this->end_date = $r['end_date'];
+        $this->comment = $r['comment'] ?? '';
     }
 
     /**

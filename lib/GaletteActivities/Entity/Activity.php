@@ -45,10 +45,10 @@ class Activity
     /**
      * Default constructor
      *
-     * @param Db                                      $zdb  Database instance
-     * @param null|int|ArrayObject<string,int|string> $args Either a ResultSet row or its id for to load
-     *                                                      a specific activity, or null to just
-     *                                                      instanciate object
+     * @param Db                                  $zdb  Database instance
+     * @param null|int|ArrayObject<string, mixed> $args Either a ResultSet row or its id for to load
+     *                                                  a specific activity, or null to just
+     *                                                  instanciate object
      */
     public function __construct(Db $zdb, int|ArrayObject|null $args = null)
     {
@@ -92,22 +92,22 @@ class Activity
     /**
      * Populate object from a resultset row
      *
-     * @param ArrayObject<string, string|int> $r the resultset row
+     * @param ArrayObject<string, mixed> $r the resultset row
      */
     private function loadFromRS(ArrayObject $r): void
     {
-        $this->id = (int)$r->id_activity;
-        $this->name = $r->name;
-        $this->type = $r->type ?? '';
-        if ($r->price !== null) {
-            $this->price = (float)$r->price;
+        $this->id = (int)$r['id_activity'];
+        $this->name = $r['name'];
+        $this->type = $r['type'] ?? '';
+        if ($r['price'] !== null) {
+            $this->price = (float)$r['price'];
         }
-        if ($r->id_group !== null) {
-            $this->id_group = (int)$r->id_group;
+        if ($r['id_group'] !== null) {
+            $this->id_group = (int)$r['id_group'];
             $this->group = new Group($this->id_group);
         }
-        $this->creation_date = $r->creation_date;
-        $this->comment = $r->comment;
+        $this->creation_date = $r['creation_date'];
+        $this->comment = $r['comment'];
     }
 
     /**
