@@ -583,11 +583,9 @@ class Subscription
     /**
      * Get row class related to current subscription status
      *
-     * @param bool $public we want the class for public pages
-     *
      * @return string the class to apply
      */
-    public function getRowClass(bool $public = false): string
+    public function getRowClass(): string
     {
         $strclass = 'subscription-'
             . ($this->isPaid() ? 'paid' : 'notpaid');

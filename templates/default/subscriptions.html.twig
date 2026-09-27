@@ -189,9 +189,6 @@
                     </td>
                     <td class="{{ rclass }} username_row" data-scope="row">
                         {% set bid = subscription.getId() %}
-                        <span class="ui checkbox">
-                            <input type="checkbox" name="entries_sel[]" value="{{ bid }}"/>
-                        </span>
                         <a href="{{ url_for("activities_activity_edit", {"id": subscription.getActivityId()}) }}">{{ subscription.getActivity().getName() }}</a>
                     </td>
                     <td class="{{ rclass }}" data-col-label="{{ _T("Member") }}">
@@ -214,7 +211,7 @@
                     </td>
                     <td class="{{ rclass }} center actions_row collapsing">
             {% set actions = [] %}
-            {% if login.isAdmin() or login.isStaff() or (login.isGroupManager() and subscription.getActivity().getGroup() in login.managed_groups) %}
+            {% if login.isAdmin() or login.isStaff() %}
                 {% set actions = (actions ?? [])|merge([
                     {
                         'label': _T("Edit subscription", "activities"),

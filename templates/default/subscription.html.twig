@@ -105,11 +105,9 @@
 {% block javascripts %}
     <script type="text/javascript">
         {% include "elements/js/choose_adh.js.twig" with {"js_chosen_id": "#member"} %}
+        //reload form with selected activity values, without storing
         $('#activity').on('change', function() {
-            var _this = $(this);
-            var _val = _this.find('option:selected').val()
-            _this.parents('form').find('input[name=save]').remove();
-            _this.parents('form').submit();
+            $(this).parents('form').submit();
         });
     </script>
 {% endblock %}
