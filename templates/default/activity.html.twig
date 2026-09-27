@@ -26,11 +26,16 @@
                     label: activity.getFieldLabel('type')
                 } %}
 
-                {% include "components/forms/text.html.twig" with {
+                {% embed "components/forms/number.html.twig" with {
                     id: 'price',
                     value: activity.getPrice(),
                     label: activity.getFieldLabel('price')
                 } %}
+                    {# cents are allowed #}
+                    {% block element %}
+                        <input type="number" step="0.01" name="{{ id }}" id="{{ id }}" value="{% if value is not same as null %}{{ value }}{% endif %}"/>
+                    {% endblock %}
+                {% endembed %}
 
                 {% set group_list_values = {(0): _T("Select a group")} %}
                 {% for group in groups %}

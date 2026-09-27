@@ -331,7 +331,7 @@ class SubscriptionsController extends GaletteRoutingTestCase
         $this->assertSame(200, $test_response->getStatusCode());
         $body = (string)$test_response->getBody();
         $this->assertMatchesRegularExpression('/<option\s+value="' . $activity . '"\s+selected="selected"/', $body);
-        $this->assertStringContainsString('placeholder="12.5"', $body);
+        $this->assertStringContainsString('<input type="number" step="0.01" name="payment_amount" id="payment_amount" value="" placeholder="12.5"/>', $body);
         $this->assertFalse(isset($this->session->plugin_activities_subscription));
         //reloaded form is checked, not stored
         $this->expectLogEntry(\Analog\Analog::ERROR, 'Subscription date is mandatory');

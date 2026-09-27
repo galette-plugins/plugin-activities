@@ -70,12 +70,17 @@
                 {{ _T("Financial information", "activities") }}
             </div>
             <div class="active content">
-                {% include "components/forms/text.html.twig" with {
+                {% embed "components/forms/number.html.twig" with {
                     id: 'payment_amount',
                     value: subscription.getAmount(),
                     label: _T("Amount", "activities"),
                     placeholder: subscription.getAmountFromActivity()
                 } %}
+                    {# cents are allowed #}
+                    {% block element %}
+                        <input type="number" step="0.01" name="{{ id }}" id="{{ id }}" value="{% if value is not same as null %}{{ value }}{% endif %}"{% if placeholder is not null %} placeholder="{{ placeholder }}"{% endif %}/>
+                    {% endblock %}
+                {% endembed %}
 
                 <div class="three fields">
                 {% include "components/forms/payment_types.html.twig" with {

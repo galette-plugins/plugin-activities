@@ -211,6 +211,7 @@ class ActivitiesController extends GaletteRoutingTestCase
         );
         $this->assertStringContainsString('value="Climbing"', $body);
         $this->assertStringContainsString('value="ESC"', $body);
+        $this->assertStringContainsString('<input type="number" step="0.01" name="price" id="price" value="10"/>', $body);
         $this->assertStringContainsString('Indoor', $body);
         $this->assertMatchesRegularExpression('/<option\s+value="' . $group->getId() . '"\s+selected="selected"/', $body);
         $this->expectNoLogEntry();
