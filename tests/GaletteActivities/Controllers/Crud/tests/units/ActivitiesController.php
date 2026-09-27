@@ -160,4 +160,123 @@ class ActivitiesController extends GaletteRoutingTestCase
         $this->assertStringContainsString('2 subscriptions to this activity will be removed as well.', $body);
         $this->expectNoLogEntry();
     }
+
+    /**
+     * Activities list
+     */
+    public function testList(): void
+    {
+        $this->logSuperAdmin();
+        $group = $this->createGroup('Climbers');
+        $this->insertActivity('Climbing', $group->getId(), ['price' => 12.5]);
+        $this->insertActivity('Hiking', null, ['price' => null]);
+
+        $test_response = $this->app->handle($this->createRequest('activities_activities'));
+        $this->assertSame(200, $test_response->getStatusCode());
+        $body = (string)$test_response->getBody();
+        $this->assertStringContainsString('2 activities', $body);
+        $this->assertStringContainsString('Climbing', $body);
+        $this->assertStringContainsString('12.50', $body);
+        $this->assertStringContainsString('Climbers', $body);
+        $this->assertStringContainsString('Hiking', $body);
+        $this->expectNoLogEntry();
+    }
+
+    /**
+     * Creation and edition forms
+     */
+    public function testForms(): void
+    {
+        $this->logSuperAdmin();
+        $group = $this->createGroup('Climbers');
+        $id = $this->insertActivity('Climbing', $group->getId(), ['type' => 'ESC', 'comment' => 'Indoor']);
+
+        $test_response = $this->app->handle($this->createRequest('activities_activity_add'));
+        $this->assertSame(200, $test_response->getStatusCode());
+        $body = (string)$test_response->getBody();
+        $this->assertStringContainsString('action="' . $this->routeparser->urlFor('activities_storeactivity_add') . '"', $body);
+        $this->assertStringContainsString('Climbers', $body);
+        $this->expectNoLogEntry();
+
+        $test_response = $this->app->handle($this->createRequest('activities_activity_edit', ['id' => (string)$id]));
+        $this->assertSame(200, $test_response->getStatusCode());
+        $body = (string)$test_response->getBody();
+        $this->assertStringContainsString(
+            'action="' . $this->routeparser->urlFor('activities_storeactivity_edit', ['id' => (string)$id]) . '"',
+            $body
+        );
+        $this->assertStringContainsString('value="Climbing"', $body);
+        $this->assertStringContainsString('value="ESC"', $body);
+        $this->assertStringContainsString('Indoor', $body);
+        $this->assertMatchesRegularExpression('/<option\s+value="' . $group->getId() . '"\s+selected="selected"/', $body);
+        $this->expectNoLogEntry();
+    }
+
+    /**
+     * Activities are changed, invalid values are displayed again
+     */
+    public function testEdit(): void
+    {
+        $this->logSuperAdmin();
+        $id = $this->insertActivity('Climbing');
+        $post = function (array $data) use ($id): \Psr\Http\Message\ResponseInterface {
+            $request = $this->createRequest('activities_storeactivity_edit', ['id' => (string)$id], 'POST')
+                ->withParsedBody($data + ['id' => (string)$id, 'comment' => '']);
+            return $this->app->handle($request);
+        };
+
+        $test_response = $post(['name' => 'Bouldering', 'price' => '8']);
+        $this->assertSame(
+            ['Location' => [$this->routeparser->urlFor('activities_activities')]],
+            $test_response->getHeaders()
+        );
+        $this->expectNoLogEntry();
+        $this->expectFlashData(['success_detected' => ['Activity has been modified.']]);
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $id);
+        $this->assertSame('Bouldering', $activity->getName());
+        $this->assertSame(8.0, $activity->getPrice());
+
+        $test_response = $post(['name' => 'Bouldering', 'type' => 'TOOLONG']);
+        $edit_url = $this->routeparser->urlFor('activities_activity_edit', ['id' => (string)$id]);
+        $this->assertSame(['Location' => [$edit_url]], $test_response->getHeaders());
+        $this->assertSame(303, $test_response->getStatusCode());
+        $this->expectLogEntry(\Analog\Analog::ERROR, 'Type is too long');
+        $this->expectNoLogEntry();
+        $this->expectFlashData(['error_detected' => ['Type is too long']]);
+        $this->assertSame('', (new \GaletteActivities\Entity\Activity($this->zdb, $id))->getType());
+
+        //form is displayed again from session
+        $this->assertNotNull($this->session->plugin_activities_activity);
+        $test_response = $this->app->handle($this->createRequest('activities_activity_edit', ['id' => (string)$id]));
+        $this->assertSame(200, $test_response->getStatusCode());
+        $this->assertStringContainsString('value="Bouldering"', (string)$test_response->getBody());
+        $this->assertFalse(isset($this->session->plugin_activities_activity));
+        $this->expectNoLogEntry();
+    }
+
+    /**
+     * Activities are removed with their subscriptions
+     */
+    public function testRemove(): void
+    {
+        $this->logSuperAdmin();
+        $id = $this->insertActivity('Climbing');
+        $this->insertSubscription($id, $this->getMemberOne()->id);
+
+        //not confirmed
+        $request = $this->createRequest('activities_do_remove_activity', ['id' => (string)$id], 'POST');
+        $this->app->handle($request->withParsedBody([]));
+        $this->expectFlashData(['error_detected' => ['Removal has not been confirmed!']]);
+        $this->assertSame(1, $this->countSubscriptions($id));
+
+        $test_response = $this->app->handle($request->withParsedBody(['confirm' => '1']));
+        $this->assertSame(
+            ['Location' => [$this->routeparser->urlFor('activities_activities')]],
+            $test_response->getHeaders()
+        );
+        $this->expectNoLogEntry();
+        $this->expectFlashData(['success_detected' => ['Successfully deleted!']]);
+        $this->assertFalse((new \GaletteActivities\Entity\Activity($this->zdb))->load($id));
+        $this->assertSame(0, $this->countSubscriptions($id));
+    }
 }
