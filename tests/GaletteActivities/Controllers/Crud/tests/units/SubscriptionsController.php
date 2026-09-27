@@ -178,4 +178,36 @@ class SubscriptionsController extends GaletteRoutingTestCase
         $this->expectFlashData(['success_detected' => ['Successfully deleted!']]);
         $this->assertSame(0, $this->countSubscriptions($activity));
     }
+
+    /**
+     * Member filter is optional, and can be cleared
+     */
+    public function testMemberFilter(): void
+    {
+        $this->logSuperAdmin();
+        $member_one = $this->getMemberOne();
+        $activity = $this->insertActivity('Climbing');
+
+        $filter = function (array $data): void {
+            $request = $this->createRequest('activities_filter-subscriptionslist', [], 'POST')
+                ->withParsedBody($data);
+            $test_response = $this->app->handle($request);
+            $this->assertSame(303, $test_response->getStatusCode());
+            $this->expectNoLogEntry();
+        };
+
+        //activity alone
+        $filter(['activity_filter' => (string)$activity, 'member_filter' => '']);
+        $this->assertSame($activity, $this->getSubscriptionsFilters()->activity_filter);
+        $this->assertNull($this->getSubscriptionsFilters()->member_filter);
+
+        $filter(['activity_filter' => (string)$activity, 'member_filter' => (string)$member_one->id]);
+        $this->assertSame($member_one->id, $this->getSubscriptionsFilters()->member_filter);
+
+        //cleared
+        $filter(['activity_filter' => (string)$activity, 'member_filter' => '']);
+        $this->assertNull($this->getSubscriptionsFilters()->member_filter);
+
+        $this->getSubscriptionsFilters()->reinit();
+    }
 }

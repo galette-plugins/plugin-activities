@@ -183,9 +183,12 @@ class SubscriptionsList extends Pagination
                         );
                     }
                     break;
-                case 'payment_type_filter':
                 case 'activity_filter':
                 case 'member_filter':
+                    //empty means no filter
+                    $this->$name = ($value === null || $value === '') ? null : (int)$value;
+                    break;
+                case 'payment_type_filter':
                 case 'date_field':
                     $this->$name = (int)$value;
                     break;

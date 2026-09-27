@@ -167,7 +167,7 @@ class SubscriptionsController extends AbstractPluginController
             }
 
             if (isset($post['member_filter'])) {
-                if (is_numeric($post['member_filter'])) {
+                if ($post['member_filter'] === '' || is_numeric($post['member_filter'])) {
                     $filters->member_filter = $post['member_filter'];
                 }
             }
