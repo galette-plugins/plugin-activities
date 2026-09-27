@@ -16,9 +16,12 @@ use Galette\Core\Login;
 use Galette\Core\Plugins\MemberActionProviderInterface;
 use Galette\Core\Plugins\MenuProviderInterface;
 use Galette\Entity\Adherent;
+use Galette\Entity\Group;
 use Galette\Core\GalettePlugin;
 use GaletteActivities\Entity\Activity;
 use GaletteActivities\Entity\Subscription;
+use Laminas\Db\Metadata\Object\ConstraintObject;
+use Laminas\Db\Metadata\Source\Factory;
 
 /**
  * Galette Activities plugin
@@ -141,5 +144,27 @@ class PluginGaletteActivities extends GalettePlugin implements MenuProviderInter
         return
             $this->zdb->tableExists(ACTIVITIES_PREFIX . Activity::TABLE)
             && $this->zdb->tableExists(ACTIVITIES_PREFIX . Subscription::TABLE);
+    }
+
+    /**
+     * Database version of tables created before plugins versions tracking
+     *
+     * Before 1.1, the group foreign key was not updated in cascade on MySQL,
+     * and subscriptions columns accepted NULL on PostgreSQL.
+     */
+    public function getLegacyDbVersion(): ?float
+    {
+        $metadata = Factory::createSourceFromAdapter($this->zdb->db);
+        /** @var ConstraintObject $constraint */
+        foreach ($metadata->getConstraints(PREFIX_DB . ACTIVITIES_PREFIX . Activity::TABLE) as $constraint) {
+            if ($constraint->isForeignKey() && $constraint->getColumns() === [Group::PK]) {
+                if ($constraint->getUpdateRule() !== 'CASCADE') {
+                    return 1.0;
+                }
+            }
+        }
+
+        $column = $metadata->getColumn(Activity::PK, PREFIX_DB . ACTIVITIES_PREFIX . Subscription::TABLE);
+        return $column->isNullable() ? 1.0 : null;
     }
 }

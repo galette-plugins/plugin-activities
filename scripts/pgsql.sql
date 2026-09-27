@@ -39,9 +39,9 @@ CREATE SEQUENCE galette_activities_subscriptions_id_seq
 DROP TABLE IF EXISTS galette_activities_subscriptions CASCADE;
 CREATE TABLE galette_activities_subscriptions (
   id_subscription integer DEFAULT nextval('galette_activities_subscriptions_id_seq'::text) NOT NULL,
-  id_activity integer REFERENCES galette_activities_activities (id_activity) ON DELETE CASCADE ON UPDATE CASCADE,
-  id_adh integer REFERENCES galette_adherents (id_adh) ON DELETE CASCADE ON UPDATE CASCADE,
-  is_paid boolean default FALSE,
+  id_activity integer NOT NULL REFERENCES galette_activities_activities (id_activity) ON DELETE CASCADE ON UPDATE CASCADE,
+  id_adh integer NOT NULL REFERENCES galette_adherents (id_adh) ON DELETE CASCADE ON UPDATE CASCADE,
+  is_paid boolean NOT NULL default FALSE,
   payment_amount decimal(15,2) NULL DEFAULT NULL,
   payment_method smallint default '0' NOT NULL,
   creation_date date NOT NULL,

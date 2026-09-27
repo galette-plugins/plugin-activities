@@ -125,4 +125,24 @@ class PluginGaletteActivities extends GaletteTestCase
     {
         $this->assertTrue($this->getPlugin()->isInstalled());
     }
+
+    /**
+     * Tables created before 1.1 are detected; on MySQL, schema changes cannot be rolled back,
+     * the CI upgrade job covers them
+     */
+    public function testLegacyDbVersion(): void
+    {
+        $plugin = $this->getPlugin();
+        $this->assertNull($plugin->getLegacyDbVersion());
+
+        if ($this->zdb->isPostgres()) {
+            //rolled back with the test transaction
+            $this->zdb->db->query(
+                'ALTER TABLE ' . PREFIX_DB . ACTIVITIES_PREFIX . \GaletteActivities\Entity\Subscription::TABLE
+                . ' ALTER COLUMN ' . \GaletteActivities\Entity\Activity::PK . ' DROP NOT NULL',
+                \Laminas\Db\Adapter\Adapter::QUERY_MODE_EXECUTE
+            );
+            $this->assertSame(1.0, $plugin->getLegacyDbVersion());
+        }
+    }
 }

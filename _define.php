@@ -20,5 +20,5 @@ $this->register(
     acls: [                        //Permissions needed
         '/activities_.*/'           => 'staff'
     ],
-    dbver: 1.00
+    dbver: 1.1
 );
