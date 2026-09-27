@@ -77,9 +77,6 @@ class SubscriptionsController extends AbstractPluginController
                 case 'order':
                     $filters->orderby = $value;
                     break;
-                case 'clear_filter':
-                    $filters->reinit();
-                    break;
             }
         }
 

@@ -20,6 +20,11 @@ $app->get(
     [ActivitiesController::class, 'list']
 )->setName('activities_activities')->add(Authenticate::class);
 
+$app->post(
+    '/activities/filter',
+    [ActivitiesController::class, 'filter']
+)->setName('activities_filter-activitieslist')->add(Authenticate::class);
+
 $app->get(
     '/activity/add',
     [ActivitiesController::class, 'add']

@@ -94,4 +94,27 @@ class ActivitiesController extends GaletteRoutingTestCase
         $this->expectNoLogEntry();
         $this->expectFlashData(['success_detected' => ['New activity has been successfully added.']]);
     }
+
+    /**
+     * Number of activities per page can be chosen
+     */
+    public function testFilter(): void
+    {
+        $this->logSuperAdmin();
+
+        $request = $this->createRequest('activities_filter-activitieslist', [], 'POST')
+            ->withParsedBody(['nbshow' => '20']);
+        $test_response = $this->app->handle($request);
+        $this->assertSame(
+            ['Location' => [$this->routeparser->urlFor('activities_activities')]],
+            $test_response->getHeaders()
+        );
+        $this->assertSame(303, $test_response->getStatusCode());
+        $this->expectNoLogEntry();
+
+        $test_response = $this->app->handle($this->createRequest('activities_activities'));
+        $this->assertSame(200, $test_response->getStatusCode());
+        $this->assertStringContainsString('name="nbshow" value="20"', (string)$test_response->getBody());
+        $this->expectNoLogEntry();
+    }
 }

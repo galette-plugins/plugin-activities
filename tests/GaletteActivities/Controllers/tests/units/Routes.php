@@ -64,7 +64,7 @@ class Routes extends GaletteRoutingTestCase
         }
 
         //ensure routes have been found; a new route is checked without any change here
-        $this->assertGreaterThanOrEqual(15, count($requests));
+        $this->assertGreaterThanOrEqual(16, count($requests));
         return $requests;
     }
 
