@@ -34,6 +34,9 @@ class PluginGaletteActivities extends GalettePlugin implements MenuProviderInter
     #[Inject]
     private readonly Db $zdb; //@phpstan-ignore property.uninitializedReadonly,property.onlyRead (injected from DI)
 
+    #[Inject]
+    private readonly Login $login; //@phpstan-ignore property.uninitializedReadonly,property.onlyRead (injected from DI)
+
     /**
      * Get plugins menus
      *
@@ -41,11 +44,9 @@ class PluginGaletteActivities extends GalettePlugin implements MenuProviderInter
      */
     public function getMenus(): array
     {
-        /** @var Login $login */
-        global $login;
         $menus = [];
 
-        if ($login->isAdmin() || $login->isStaff()) {
+        if ($this->login->isAdmin() || $this->login->isStaff()) {
             $menus['plugin_activities'] = [
                 'title' => _T("Activities", "activities"),
                 'icon' => 'calendar alternate',
@@ -90,10 +91,7 @@ class PluginGaletteActivities extends GalettePlugin implements MenuProviderInter
      */
     public function getListActions(Adherent $member): array
     {
-        /** @var Login $login */
-        global $login;
-
-        if (!$login->isAdmin() && !$login->isStaff()) {
+        if (!$this->login->isAdmin() && !$this->login->isStaff()) {
             return [];
         }
 
