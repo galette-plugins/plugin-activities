@@ -475,7 +475,7 @@ class SubscriptionsController extends AbstractPluginController
      */
     protected function doDelete(array $args, array $post): bool
     {
-        $subscription = new Subscription($this->zdb, (int)$post['id']);
+        $subscription = new Subscription($this->zdb, (int)$args['id']);
         return $subscription->remove();
     }
 

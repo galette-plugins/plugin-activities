@@ -157,4 +157,25 @@ class SubscriptionsController extends GaletteRoutingTestCase
         $this->expectNoLogEntry();
         $this->expectFlashData(['error_detected' => ['No subscription #' . $id . '.']]);
     }
+
+    /**
+     * Subscriptions are removed from their route ID, as activities
+     */
+    public function testRemoveSubscription(): void
+    {
+        $this->logSuperAdmin();
+        $activity = $this->insertActivity('Climbing');
+        $id = $this->insertSubscription($activity, $this->getMemberOne()->id);
+
+        $request = $this->createRequest('activities_do_remove_subscription', ['id' => (string)$id], 'POST')
+            ->withParsedBody(['confirm' => '1']);
+        $test_response = $this->app->handle($request);
+        $this->assertSame(
+            ['Location' => [$this->routeparser->urlFor('activities_subscriptions')]],
+            $test_response->getHeaders()
+        );
+        $this->expectNoLogEntry();
+        $this->expectFlashData(['success_detected' => ['Successfully deleted!']]);
+        $this->assertSame(0, $this->countSubscriptions($activity));
+    }
 }
