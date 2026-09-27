@@ -137,4 +137,27 @@ class ActivitiesController extends GaletteRoutingTestCase
         }
         unset($this->session->activity, $this->session->activities_filter, $this->session->subscription);
     }
+
+    /**
+     * Removal confirmation announces subscriptions removed with the activity
+     */
+    public function testConfirmRemovalCountsSubscriptions(): void
+    {
+        $this->logSuperAdmin();
+        $activity = $this->insertActivity('Climbing');
+
+        $body = (string)$this->app->handle(
+            $this->createRequest('activities_remove_activity', ['id' => (string)$activity])
+        )->getBody();
+        $this->assertStringNotContainsString('will be removed as well', $body);
+        $this->expectNoLogEntry();
+
+        $this->insertSubscription($activity, $this->getMemberOne()->id);
+        $this->insertSubscription($activity, $this->getMemberTwo()->id);
+        $body = (string)$this->app->handle(
+            $this->createRequest('activities_remove_activity', ['id' => (string)$activity])
+        )->getBody();
+        $this->assertStringContainsString('2 subscriptions to this activity will be removed as well.', $body);
+        $this->expectNoLogEntry();
+    }
 }

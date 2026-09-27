@@ -14,6 +14,7 @@ use Galette\Controllers\Crud\AbstractPluginController;
 use Galette\Repository\Groups;
 use GaletteActivities\Filters\ActivitiesList;
 use GaletteActivities\Entity\Activity;
+use GaletteActivities\Entity\Subscription;
 use GaletteActivities\Repository\Activities;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
@@ -320,6 +321,34 @@ class ActivitiesController extends AbstractPluginController
             _T('Remove activity %1$s', 'activities'),
             $activity->getName()
         );
+    }
+
+    /**
+     * Removal confirmation parameters: subscriptions are removed with the activity
+     *
+     * @return array<string,mixed>
+     */
+    protected function getconfirmDeleteParams(Request $request): array
+    {
+        $params = parent::getconfirmDeleteParams($request);
+
+        $select = $this->zdb->select(ACTIVITIES_PREFIX . Subscription::TABLE);
+        $select->where([Activity::PK => (int)$params['data']['id']]);
+        $count = $this->zdb->execute($select)->count();
+        if ($count > 0) {
+            $params['message'] = sprintf(
+                _Tn(
+                    //TRANS: %1$s is the number of subscriptions
+                    '%1$s subscription to this activity will be removed as well.',
+                    '%1$s subscriptions to this activity will be removed as well.',
+                    $count,
+                    'activities'
+                ),
+                $count
+            );
+        }
+
+        return $params;
     }
 
     /**
