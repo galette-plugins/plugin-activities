@@ -114,4 +114,116 @@ class Subscriptions extends GaletteTestCase
         $filters->paid_filter = \GaletteActivities\Repository\Subscriptions::FILTER_NOT_PAID;
         $this->assertSame([$not_paid], $this->getListIds($filters));
     }
+
+    /**
+     * Subscriptions are filtered by activity, member, payment type, dates and selection
+     */
+    public function testFilters(): void
+    {
+        $member_one = $this->getMemberOne()->id;
+        $member_two = $this->getMemberTwo()->id;
+        $climbing = $this->insertActivity('Climbing');
+        $hiking = $this->insertActivity('Hiking');
+        $first = $this->insertSubscription($climbing, $member_one, [
+            'payment_method'    => \Galette\Entity\PaymentType::CASH,
+            'creation_date'     => '2026-01-01',
+            'subscription_date' => '2026-01-10',
+            'end_date'          => '2026-06-30',
+        ]);
+        $second = $this->insertSubscription($climbing, $member_two, [
+            'payment_method'    => \Galette\Entity\PaymentType::OTHER,
+            'creation_date'     => '2026-02-01',
+            'subscription_date' => '2026-03-01',
+            'end_date'          => '2026-12-31',
+        ]);
+        $third = $this->insertSubscription($hiking, $member_one, [
+            'payment_method'    => \Galette\Entity\PaymentType::OTHER,
+            'creation_date'     => '2026-04-15',
+            'subscription_date' => '2026-05-01',
+            'end_date'          => '2027-04-30',
+        ]);
+
+        //no filter, latest end date first
+        $filters = new SubscriptionsList();
+        $this->assertSame([$third, $second, $first], $this->getListIds($filters));
+
+        $filters->activity_filter = $climbing;
+        $this->assertSame([$second, $first], $this->getListIds($filters));
+        $subscriptions = new \GaletteActivities\Repository\Subscriptions($this->zdb, $filters);
+        $subscriptions->getList();
+        $this->assertSame(2, $subscriptions->getCount());
+
+        $filters = new SubscriptionsList();
+        $filters->member_filter = $member_one;
+        $this->assertSame([$third, $first], $this->getListIds($filters));
+
+        $filters = new SubscriptionsList();
+        $filters->payment_type_filter = \Galette\Entity\PaymentType::CASH;
+        $this->assertSame([$first], $this->getListIds($filters));
+
+        $filters = new SubscriptionsList();
+        $filters->date_field = SubscriptionsList::DATE_SUBSCRIPTION;
+        $filters->start_date_filter = '2026-02-01';
+        $this->assertSame([$third, $second], $this->getListIds($filters));
+
+        $filters = new SubscriptionsList();
+        $filters->date_field = SubscriptionsList::DATE_END;
+        $filters->end_date_filter = '2026-12-31';
+        $this->assertSame([$second, $first], $this->getListIds($filters));
+
+        $filters = new SubscriptionsList();
+        $filters->date_field = SubscriptionsList::DATE_CREATION;
+        $filters->start_date_filter = '2026-02-01';
+        $filters->end_date_filter = '2026-03-01';
+        $this->assertSame([$second], $this->getListIds($filters));
+
+        $filters = new SubscriptionsList();
+        $filters->selected = [$first, $third];
+        $this->assertSame([$third, $first], $this->getListIds($filters));
+
+        //filters are reset
+        $filters->reinit();
+        $this->assertSame([$third, $second, $first], $this->getListIds($filters));
+    }
+
+    /**
+     * Subscriptions are ordered on every column
+     */
+    public function testOrders(): void
+    {
+        $member_one = $this->getMemberOne();
+        $member_two = $this->getMemberTwo();
+        $climbing = $this->insertActivity('Climbing');
+        $hiking = $this->insertActivity('Hiking');
+        $first = $this->insertSubscription($climbing, $member_one->id, [
+            'payment_amount'    => 30,
+            'subscription_date' => '2026-03-01',
+            'end_date'          => '2026-06-30',
+        ]);
+        $second = $this->insertSubscription($hiking, $member_two->id, [
+            'payment_amount'    => 10,
+            'subscription_date' => '2026-01-01',
+            'end_date'          => '2026-12-31',
+        ]);
+
+        $by_name = strcmp($member_one->name . ' ' . $member_one->surname, $member_two->name . ' ' . $member_two->surname) > 0
+            ? [$first, $second]
+            : [$second, $first];
+        $expected = [
+            \GaletteActivities\Repository\Subscriptions::ORDERBY_ACTIVITY => [$second, $first],
+            \GaletteActivities\Repository\Subscriptions::ORDERBY_MEMBER => $by_name,
+            \GaletteActivities\Repository\Subscriptions::ORDERBY_SUBSCRIPTIONDATE => [$first, $second],
+            \GaletteActivities\Repository\Subscriptions::ORDERBY_ENDDATE => [$second, $first],
+            \GaletteActivities\Repository\Subscriptions::ORDERBY_AMOUNT => [$first, $second],
+        ];
+        foreach ($expected as $orderby => $ids) {
+            //default direction is descending
+            $filters = new SubscriptionsList();
+            $filters->orderby = $orderby;
+            $filters->setDirection(\Galette\Enums\SQLOrder::DESC);
+            $this->assertSame($ids, $this->getListIds($filters), 'order ' . $orderby);
+            $filters->invertorder();
+            $this->assertSame(array_reverse($ids), $this->getListIds($filters), 'order ' . $orderby . ' ascending');
+        }
+    }
 }

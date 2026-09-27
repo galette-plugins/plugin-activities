@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace GaletteActivities\tests\units;
 
 use Galette\Tests\GaletteTestCase;
+use GaletteActivities\tests\ActivitiesFixtures;
 
 /**
  * Activity tests
@@ -19,6 +20,8 @@ use Galette\Tests\GaletteTestCase;
  */
 class Activity extends GaletteTestCase
 {
+    use ActivitiesFixtures;
+
     protected int $seed = 20240817102541;
 
     /**
@@ -26,7 +29,9 @@ class Activity extends GaletteTestCase
      */
     public function tearDown(): void
     {
-        $delete = $this->zdb->delete(ACTIVITIES_PREFIX . \GaletteActivities\Entity\Activity::TABLE);
+        $this->cleanActivities();
+
+        $delete = $this->zdb->delete(\Galette\Entity\Group::GROUPSUSERS_TABLE);
         $this->zdb->execute($delete);
 
         $delete = $this->zdb->delete(\Galette\Entity\Group::TABLE);
@@ -193,5 +198,26 @@ class Activity extends GaletteTestCase
         $this->assertNull($activity->getPrice());
 
         $this->expectInvalid(['name' => 'Climbing', 'price' => 'twelve'], ['Price must be a number.']);
+    }
+
+    /**
+     * Subscriptions are removed with their activity, members stay in the group
+     */
+    public function testRemoveCascades(): void
+    {
+        $member_one = $this->getMemberOne();
+        $group = $this->createGroup('Activity group', [], [$member_one]);
+        $climbing = $this->insertActivity('Climbing', $group->getId());
+        $hiking = $this->insertActivity('Hiking');
+        $this->insertSubscription($climbing, $member_one->id);
+        $this->insertSubscription($hiking, $member_one->id);
+
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $climbing);
+        $this->assertSame($group->getId(), $activity->getGroup()?->getId());
+        $this->assertTrue($activity->remove());
+
+        $this->assertSame(0, $this->countSubscriptions($climbing));
+        $this->assertSame(1, $this->countSubscriptions($hiking));
+        $this->assertTrue($this->isInGroup($group->getId(), $member_one->id));
     }
 }

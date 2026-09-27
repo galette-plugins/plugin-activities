@@ -229,7 +229,7 @@ class Subscription extends GaletteTestCase
 
         //remove subscription
         $this->assertTrue($subscription->remove());
-        $this->assertFalse($activity->load($subscription_id));
+        $this->assertFalse((new \GaletteActivities\Entity\Subscription($this->zdb))->load($subscription_id));
 
         //create a subscription with a group
         $subscription = new \GaletteActivities\Entity\Subscription($this->zdb);
