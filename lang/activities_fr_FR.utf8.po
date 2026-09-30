@@ -3,9 +3,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Galette Activities plugin\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: translations@galette.eu\n"
 "POT-Creation-Date: 2026-09-27 21:37+0200\n"
-"PO-Revision-Date: 2026-09-29 20:13+0000\n"
+"PO-Revision-Date: 2026-09-30 06:25+0000\n"
 "Last-Translator: Johan Cwiklinski <trasher@x-tnd.be>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/galette/plugins-"
 "activities/fr/>\n"
@@ -23,14 +23,13 @@ msgstr "L'activité est requise"
 #. TRANS: %1$s is the activity ID
 #: ../lib/GaletteActivities/Entity/Subscription.php:119
 #: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:57
-#, fuzzy, php-format
-#| msgid "Remove activity %1$s"
+#, php-format
 msgid "No activity #%1$s."
-msgstr "Supprimer l'activité %1$s"
+msgstr "Pas d'activité #%1$s."
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:141
 msgid "Amount must be a number."
-msgstr ""
+msgstr "Le montant doit être un chiffre."
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:161
 msgid "Member is mandatory"
@@ -46,7 +45,7 @@ msgstr "La date de fin est requise"
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:192
 msgid "End date must not be before subscription date."
-msgstr ""
+msgstr "La date de fin ne doit pas être antérieure à la date de souscription."
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:196
 msgid "Subscription already exists for this member and activity"
@@ -117,10 +116,8 @@ msgid "Name is mandatory"
 msgstr "Le nom est requis"
 
 #: ../lib/GaletteActivities/Entity/Activity.php:99
-#, fuzzy
-#| msgid "Type is too long"
 msgid "Name is too long"
-msgstr "Le type est trop long"
+msgstr "Le nom est trop long"
 
 #: ../lib/GaletteActivities/Entity/Activity.php:106
 msgid "Type is too long"
@@ -128,7 +125,7 @@ msgstr "Le type est trop long"
 
 #: ../lib/GaletteActivities/Entity/Activity.php:121
 msgid "Price must be a number."
-msgstr ""
+msgstr "Le prix doit être un nombre."
 
 #: ../lib/GaletteActivities/Entity/Activity.php:171
 msgid "Fail to add new activity."
@@ -167,10 +164,9 @@ msgstr "Groupe"
 
 #. TRANS: %1$s is the subscription ID
 #: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:60
-#, fuzzy, php-format
-#| msgid "New subscription for %1$s"
+#, php-format
 msgid "No subscription #%1$s."
-msgstr "Nouvelle souscription pour %1$s"
+msgstr "Pas de souscription #%1$s."
 
 #: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:131
 msgid "Subscriptions management"
@@ -230,8 +226,8 @@ msgstr "Supprimer l'activité %1$s"
 #, php-format
 msgid "%1$s subscription to this activity will be removed as well."
 msgid_plural "%1$s subscriptions to this activity will be removed as well."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%1$s souscription à cette activité va être également supprimée."
+msgstr[1] "%1$s souscriptions à cette activité vont être également supprimées."
 
 #: ../lib/GaletteActivities/PluginGaletteActivities.php:51
 #: ../lib/GaletteActivities/PluginGaletteActivities.php:55
@@ -344,6 +340,7 @@ msgstr "Attacher au groupe"
 #: ../templates/default/activity.html.twig:49
 msgid "Subscribed members join this group, and are never removed from it."
 msgstr ""
+"Les adhérents inscrits rejoignent ce groupe et n'en sont jamais retirés."
 
 #: ../templates/default/activities.html.twig:19
 #, php-format
