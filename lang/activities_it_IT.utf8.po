@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: translations@galette.eu\n"
 "POT-Creation-Date: 2026-09-30 08:32+0200\n"
-"PO-Revision-Date: 2026-09-03 10:59+0000\n"
+"PO-Revision-Date: 2026-10-01 18:52+0000\n"
 "Last-Translator: Johan Cwiklinski <trasher@x-tnd.be>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/galette/plugins-"
 "activities/it/>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.9\n"
+"X-Generator: Weblate 2026.10\n"
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:112
 msgid "Activity is mandatory"
@@ -36,7 +36,7 @@ msgstr ""
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:161
 msgid "Member is mandatory"
-msgstr "Il socio è obbligatorio"
+msgstr "Il membro è obbligatorio"
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:177
 msgid "Subscription date is mandatory"
