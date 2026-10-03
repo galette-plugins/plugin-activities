@@ -1,30 +1,16 @@
 {#
-/**
- * Copyright © 2003-2024 The Galette Team
- *
- * This file is part of Galette (https://galette.eu).
- *
- * Galette is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Galette is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Galette. If not, see <http://www.gnu.org/licenses/>.
- */
-#}
+ # This file is part of Galette Activities plugin (https://galette.eu).
+ # SPDX-FileCopyrightText: Copyright © 2024-2026 The Galette Team
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+
 {% extends "page.html.twig" %}
 
 {% block content %}
     <form action="{% if activity.getId() %}{{ url_for("activities_storeactivity_edit", {"id": activity.getId()}) }}{% else %}{{ url_for("activities_storeactivity_add") }}{% endif %}" method="post" class="ui form">
         <div class="ui styled fluid accordion field">
             <div class="active title">
-                <i class="icon dropdown"></i>
+                <i class="icon dropdown" aria-hidden="true"></i>
                 {{ _T("General information", "activities") }}
             </div>
             <div class="active content">
@@ -40,27 +26,29 @@
                     label: activity.getFieldLabel('type')
                 } %}
 
-                {% include "components/forms/text.html.twig" with {
+                {% embed "components/forms/number.html.twig" with {
                     id: 'price',
                     value: activity.getPrice(),
                     label: activity.getFieldLabel('price')
                 } %}
+                    {# cents are allowed #}
+                    {% block element %}
+                        <input type="number" step="0.01" name="{{ id }}" id="{{ id }}" value="{% if value is not same as null %}{{ value }}{% endif %}"/>
+                    {% endblock %}
+                {% endembed %}
 
                 {% set group_list_values = {(0): _T("Select a group")} %}
                 {% for group in groups %}
                     {% set group_list_values = group_list_values + {(group.getId()): group.getIndentName()} %}
                 {% endfor %}
 
-                {% set group_id = null %}
-                {% if activity.getGroup() is not null %}
-                    {% set group_id = activity.getGroup().getID() %}
-                {% endif %}
+                {% set group_id = activity.getGroupId() %}
                 {% include "components/forms/select.html.twig" with {
                     id: 'id_group',
                     value: group_id,
                     values: group_list_values,
                     label: _T("Attach to group", "activities"),
-                    title: _T("Group to attach members that subscribes to activity.", "activities"),
+                    description: _T("Subscribed members join this group, and are never removed from it.", "activities")|e,
                     raw_labels: true
                 } %}
 
@@ -74,30 +62,9 @@
 
         <div class="ui basic center aligned fitted segment">
             <button type="submit" name="valid" class="action ui labeled icon primary button">
-                <i class="save icon"></i> {{ _T("Save") }}
+                <i class="save icon" aria-hidden="true"></i> {{ _T("Save") }}
             </button>
             <input type="hidden" name="id" id="id" value="{{ activity.getId() }}"/>
-            {% include "components/forms/csrf.html.twig" %}
         </div>
      </form>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script type="text/javascript">
-        $(function() {
-            $('#meal, #lodging').on('change', function() {
-                var _this = $(this);
-                if (!_this.is(':checked')) {
-                    $('#' + _this.attr('id') + '_required').prop('checked', false);
-                }
-            });
-            $('#meal_required, #lodging_required').on('change', function() {
-                var _this = $(this);
-                if (_this.is(':checked')) {
-                    $('#' + _this.attr('id').replace(/_required/, '')).prop('checked', true);
-                }
-            });
-        });
-    </script>
 {% endblock %}

@@ -1,22 +1,9 @@
 <?php
 
 /**
- * Copyright © 2003-2025 The Galette Team
- *
- * This file is part of Galette (https://galette.eu).
- *
- * Galette is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Galette is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Galette. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of Galette Activities plugin (https://galette.eu).
+ * SPDX-FileCopyrightText: Copyright © 2024-2026 The Galette Team
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 declare(strict_types=1);
@@ -34,38 +21,36 @@ use GaletteActivities\Repository\Subscriptions;
  *
  * @author Johan Cwiklinski <johan@x-tnd.be>
  *
- * @property ?string $start_date_filter
- * @property ?string $end_date_filter
- * @property ?string $rstart_date_filter
- * @property ?string $rend_date_filter
- * @property ?int $activity_filter
- * @property ?int $member_filter
- * @property int $paid_filter
- * @property int $payment_type_filter
- * @property int $date_field
+ * @property ?string    $start_date_filter
+ * @property ?string    $end_date_filter
+ * @property ?string    $rstart_date_filter
+ * @property ?string    $rend_date_filter
+ * @property ?int       $activity_filter
+ * @property ?int       $member_filter
+ * @property int        $paid_filter
+ * @property int        $payment_type_filter
+ * @property int        $date_field
  * @property array<int> $selected
- * @property string $query
  */
 class SubscriptionsList extends Pagination
 {
     use DatesHelper;
 
-    public const DATE_END = 0;
-    public const DATE_SUBSCRIPTION = 1;
-    public const DATE_CREATION = 2;
+    public const int DATE_END = 0;
+    public const int DATE_SUBSCRIPTION = 1;
+    public const int DATE_CREATION = 2;
     //filters
-    private string|int|null $activity_filter;
-    private string|int|null $member_filter;
+    private ?int $activity_filter;
+    private ?int $member_filter;
 
-    private int|string $paid_filter;
+    private int $paid_filter;
     private int $payment_type_filter;
     private ?int $date_field = null;
-    private ?string $start_date_filter;
-    private ?string $end_date_filter;
+    private ?string $start_date_filter; //@phpstan-ignore property.unusedType (assigned by DatesHelper::setFilterDate())
+    private ?string $end_date_filter; //@phpstan-ignore property.unusedType (assigned by DatesHelper::setFilterDate())
 
     /** @var array<int> */
     private array $selected;
-    private string $query;
 
     /** @var array<string> */
     protected array $list_fields = [
@@ -105,8 +90,6 @@ class SubscriptionsList extends Pagination
 
     /**
      * Return the default direction for ordering
-     *
-     * @return SQLOrder
      */
     protected function getDefaultDirection(): SQLOrder
     {
@@ -115,8 +98,6 @@ class SubscriptionsList extends Pagination
 
     /**
      * Reinit default parameters
-     *
-     * @return void
      */
     public function reinit(): void
     {
@@ -173,8 +154,6 @@ class SubscriptionsList extends Pagination
      *
      * @param string $name  name of the property we want to assign a value to
      * @param mixed  $value a relevant value for the property
-     *
-     * @return void
      */
     public function __set(string $name, mixed $value): void
     {
@@ -202,15 +181,24 @@ class SubscriptionsList extends Pagination
                         );
                     }
                     break;
-                case 'payment_type_filter':
                 case 'activity_filter':
                 case 'member_filter':
+                    //empty means no filter
+                    $this->$name = ($value === null || $value === '') ? null : (int)$value;
+                    break;
+                case 'paid_filter':
+                case 'payment_type_filter':
                 case 'date_field':
                     $this->$name = (int)$value;
                     break;
                 default:
-                    $this->$name = $value;
-                    break;
+                    throw new \RuntimeException(
+                        sprintf(
+                            'Unable to set property "%s::%s"!',
+                            __CLASS__,
+                            $name
+                        )
+                    );
             }
         }
     }

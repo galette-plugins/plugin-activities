@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * This file is part of Galette Activities plugin (https://galette.eu).
+ * SPDX-FileCopyrightText: Copyright © 2024-2026 The Galette Team
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 declare(strict_types=1);
 
 /**
@@ -28,7 +34,8 @@ declare(strict_types=1);
  */
 
 define('GALETTE_PLUGINS_PATH', __DIR__ . '/../../');
-$basepath = '../../../galette/';
+$basepath = __DIR__ . '/../../../'; // phpcs:ignore SlevomatCodingStandard.Variables.UnusedVariable.UnusedVariable -- used from Core testBootstrap
 
-include_once '../../../tests/TestsBootstrap.php';
+include_once __DIR__ . '/../../../../tests/TestsBootstrap.php';
 require_once __DIR__ . '/../_config.inc.php';
+require_once __DIR__ . '/ActivitiesFixtures.php';

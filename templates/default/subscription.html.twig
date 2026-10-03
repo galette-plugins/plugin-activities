@@ -1,50 +1,36 @@
 {#
-/**
- * Copyright © 2003-2024 The Galette Team
- *
- * This file is part of Galette (https://galette.eu).
- *
- * Galette is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Galette is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Galette. If not, see <http://www.gnu.org/licenses/>.
- */
-#}
+ # This file is part of Galette Activities plugin (https://galette.eu).
+ # SPDX-FileCopyrightText: Copyright © 2024-2026 The Galette Team
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+
 {% extends "page.html.twig" %}
 
 {% block content %}
     <form class="ui form" action="{% if subscription.getId() %}{{ url_for("activities_storesubscription_edit", {"id": subscription.getId()}) }}{% else %}{{ url_for("activities_storesubscription_add") }}{% endif %}" method="post" id="modifform" enctype="multipart/form-data">
         <div class="ui styled fluid accordion field">
             <div class="active title">
-                <i class="icon dropdown"></i>
+                <i class="icon dropdown" aria-hidden="true"></i>
                 {{ _T("Subscription information", "activities") }}
             </div>
             <div class="active content">
                 {% include "components/forms/date.html.twig" with {
                     id: 'creation_date',
-                    value: subscription.getCreationDate(),
+                    value: subscription.getCreationDate() ? subscription.getCreationDate()|date(_T("Y-m-d")) : '',
                     label: _T("Creation date", "activities"),
                     required: true
                 } %}
 
                 {% include "components/forms/date.html.twig" with {
                     id: 'subscription_date',
-                    value: subscription.getSubscriptionDate(),
+                    value: subscription.getSubscriptionDate() ? subscription.getSubscriptionDate()|date(_T("Y-m-d")) : '',
                     label: _T("Subscription date", "activities"),
                     required: true
                 } %}
 
                 {% include "components/forms/date.html.twig" with {
                     id: 'end_date',
-                    value: subscription.getEndDate(),
+                    value: subscription.getEndDate() ? subscription.getEndDate()|date(_T("Y-m-d")) : '',
                     label: _T("End date", "activities"),
                     required: true
                 } %}
@@ -80,16 +66,21 @@
 
         <div class="ui styled fluid accordion field">
             <div class="active title">
-                <i class="icon dropdown"></i>
+                <i class="icon dropdown" aria-hidden="true"></i>
                 {{ _T("Financial information", "activities") }}
             </div>
             <div class="active content">
-                {% include "components/forms/text.html.twig" with {
+                {% embed "components/forms/number.html.twig" with {
                     id: 'payment_amount',
                     value: subscription.getAmount(),
                     label: _T("Amount", "activities"),
                     placeholder: subscription.getAmountFromActivity()
                 } %}
+                    {# cents are allowed #}
+                    {% block element %}
+                        <input type="number" step="0.01" name="{{ id }}" id="{{ id }}" value="{% if value is not same as null %}{{ value }}{% endif %}"{% if placeholder is not null %} placeholder="{{ placeholder }}"{% endif %}/>
+                    {% endblock %}
+                {% endembed %}
 
                 <div class="three fields">
                 {% include "components/forms/payment_types.html.twig" with {
@@ -109,22 +100,16 @@
         </div>
         <div class="ui basic center aligned fitted segment">
             <button type="submit" name="save" class="action ui labeled icon primary button">
-                <i class="save icon"></i> {{ _T("Save") }}
+                <i class="save icon" aria-hidden="true"></i> {{ _T("Save") }}
             </button>
             <input type="hidden" name="id" id="id" value="{{ subscription.getId() }}"/>
-            {% include "components/forms/csrf.html.twig" %}
         </div>
     </form>
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script type="text/javascript">
         {% include "elements/js/choose_adh.js.twig" with {"js_chosen_id": "#member"} %}
-        $('#activity').on('change', function() {
-            var _this = $(this);
-            var _val = _this.find('option:selected').val()
-            _this.parents('form').find('input[name=save]').remove();
-            _this.parents('form').submit();
-        });
     </script>
 {% endblock %}

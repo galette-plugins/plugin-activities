@@ -4,78 +4,230 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Galette Activities plugin\n"
 "Report-Msgid-Bugs-To: translations@galette.eu\n"
-"POT-Creation-Date: 2024-09-10 22:29+0200\n"
-"PO-Revision-Date: 2024-09-14 15:09+0000\n"
-"Last-Translator: ButterflyOfFire <boffire@users.noreply.hosted.weblate.org>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/galette/"
-"plugins-activities/fr/>\n"
+"POT-Creation-Date: 2026-09-30 08:32+0200\n"
+"PO-Revision-Date: 2026-09-30 06:25+0000\n"
+"Last-Translator: Johan Cwiklinski <trasher@x-tnd.be>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/galette/plugins-"
+"activities/fr/>\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
-#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:127
-msgid "Activities management"
-msgstr "Gestion des activités"
+#: ../lib/GaletteActivities/Entity/Subscription.php:112
+msgid "Activity is mandatory"
+msgstr "L'activité est requise"
 
-#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:199
-#: ../lib/GaletteActivities/Entity/Subscription.php:565
-#: ../tempcache/subscriptions.html.twig:103
-#: ../tempcache/subscriptions.html.twig:125
-#: ../tempcache/subscription.html.twig:109
+#. TRANS: %1$s is the activity ID
+#: ../lib/GaletteActivities/Entity/Subscription.php:119
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:57
+#, php-format
+msgid "No activity #%1$s."
+msgstr "Pas d'activité #%1$s."
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:141
+msgid "Amount must be a number."
+msgstr "Le montant doit être un chiffre."
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:161
+msgid "Member is mandatory"
+msgstr "L'adhérent est requis"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:177
+msgid "Subscription date is mandatory"
+msgstr "La date de souscription est requise"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:183
+msgid "End date is mandatory"
+msgstr "La date de fin est requise"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:192
+msgid "End date must not be before subscription date."
+msgstr "La date de fin ne doit pas être antérieure à la date de souscription."
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:196
+msgid "Subscription already exists for this member and activity"
+msgstr "Une souscription existe déjà pour cet adhérent et cette activité"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:248
+msgid "Fail to add new subscription."
+msgstr "Erreur à l'ajout de la nouvelle souscription."
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:257
+msgid "Subscription added"
+msgstr "Souscription ajoutée"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:273
+msgid "Subscription updated"
+msgstr "Souscription mise à jour"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:507
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:142
+#: ../templates/default/subscriptions.html.twig:39
+#: ../templates/default/subscriptions.html.twig:76
+#: ../templates/default/subscription.html.twig:46
 msgid "Activity"
 msgstr "Activité"
 
-#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:265
+#: ../lib/GaletteActivities/Entity/Subscription.php:511
+msgid "Member"
+msgstr "Adhérent"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:515
+msgid "Is paid"
+msgstr "Est payée"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:519
+#: ../templates/default/subscriptions.html.twig:39
+#: ../templates/default/subscriptions.html.twig:201
+#: ../templates/default/subscription.html.twig:75
+msgid "Amount"
+msgstr "Montant"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:523
+msgid "Payment method"
+msgstr "Moyen de paiement"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:527
+#: ../lib/GaletteActivities/Entity/Activity.php:316
+#: ../templates/default/subscription.html.twig:19
+#: ../templates/default/activities.html.twig:39
+#: ../templates/default/activities.html.twig:68
+msgid "Creation date"
+msgstr "Date de création"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:531
+#: ../templates/default/subscriptions.html.twig:39
+#: ../templates/default/subscriptions.html.twig:199
+#: ../templates/default/subscription.html.twig:26
+msgid "Subscription date"
+msgstr "Date de souscription"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:539
+#: ../lib/GaletteActivities/Entity/Activity.php:320
+#: ../templates/default/subscription.html.twig:61
+msgid "Comment"
+msgstr "Commentaire"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:97
+msgid "Name is mandatory"
+msgstr "Le nom est requis"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:99
+msgid "Name is too long"
+msgstr "Le nom est trop long"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:106
+msgid "Type is too long"
+msgstr "Le type est trop long"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:121
+msgid "Price must be a number."
+msgstr "Le prix doit être un nombre."
+
+#: ../lib/GaletteActivities/Entity/Activity.php:171
+msgid "Fail to add new activity."
+msgstr "Erreur à l'ajout de la nouvelle activité."
+
+#: ../lib/GaletteActivities/Entity/Activity.php:180
+msgid "Activity added"
+msgstr "Activité ajoutée"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:196
+msgid "Activity updated"
+msgstr "Activité mise à jour"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:300
+#: ../templates/default/activities.html.twig:39
+msgid "Name"
+msgstr "Nom"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:304
+#: ../templates/default/activities.html.twig:39
+#: ../templates/default/activities.html.twig:66
+msgid "Type"
+msgstr "Type"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:308
+#: ../templates/default/activities.html.twig:39
+#: ../templates/default/activities.html.twig:67
+msgid "Price"
+msgstr "Prix"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:312
+#: ../templates/default/activities.html.twig:39
+#: ../templates/default/activities.html.twig:69
+msgid "Group"
+msgstr "Groupe"
+
+#. TRANS: %1$s is the subscription ID
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:60
+#, php-format
+msgid "No subscription #%1$s."
+msgstr "Pas de souscription #%1$s."
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:131
+msgid "Subscriptions management"
+msgstr "Gestion des souscriptions"
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:210
+#: ../templates/default/subscriptions.html.twig:109
+msgid "Subscription"
+msgstr "Souscription"
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:289
+msgid "Do not forget to store the subscription"
+msgstr "N'oubliez pas d'enregistrer la souscription"
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:298
+msgid "New subscription has been successfully added."
+msgstr "La nouvelle souscription a été ajoutée avec succès."
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:299
+msgid "Subscription has been modified."
+msgstr "La souscription a été modifiée."
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:300
+msgid "An error occurred while storing the subscription."
+msgstr "Une erreur est survenue à l'enregistrement de la souscription."
+
+#. TRANS: %1$s is the member name, %2$s the activity name.
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:383
+#, php-format
+msgid "Remove subscription for %1$s on %2$s"
+msgstr "Supprimer la souscription pour %1$s sur %2$s"
+
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:104
+msgid "Activities management"
+msgstr "Gestion des activités"
+
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:191
 msgid "New activity has been successfully added."
 msgstr "La nouvelle activité a été ajoutée avec succès."
 
-#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:267
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:192
 msgid "Activity has been modified."
 msgstr "L'activité a été modifiée."
 
-#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:271
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:193
 msgid "An error occurred while storing the activity."
 msgstr "Une erreur est survenue à l'enregistrement de l'activité."
 
 #. TRANS %1$s is activity name
-#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:356
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:258
 #, php-format
 msgid "Remove activity %1$s"
 msgstr "Supprimer l'activité %1$s"
 
-#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:146
-msgid "Subscriptions management"
-msgstr "Gestion des souscriptions"
-
-#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:271
-#: ../tempcache/subscriptions.html.twig:206
-msgid "Subscription"
-msgstr "Souscription"
-
-#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:374
-msgid "New subscription has been successfully added."
-msgstr "La nouvelle souscription a été ajoutée avec succès."
-
-#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:376
-msgid "Subscription has been modified."
-msgstr "La souscription a été modifiée."
-
-#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:384
-msgid "An error occurred while storing the subscription."
-msgstr "Une erreur est survenue à l'enregistrement de la souscription."
-
-#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:393
-msgid "Do not forget to store the subscription"
-msgstr "N'oubliez pas d'enregistrer la souscription"
-
-#. TRANS: %1$s is the member name, %2$s the activity name.
-#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:496
+#. TRANS: %1$s is the number of subscriptions
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:281
 #, php-format
-msgid "Remove subscription for %1$s on %2$s"
-msgstr "Supprimer la souscription pour %1$s sur %2$s"
+msgid "%1$s subscription to this activity will be removed as well."
+msgid_plural "%1$s subscriptions to this activity will be removed as well."
+msgstr[0] "%1$s souscription à cette activité va être également supprimée."
+msgstr[1] "%1$s souscriptions à cette activité vont être également supprimées."
 
 #: ../lib/GaletteActivities/PluginGaletteActivities.php:51
 #: ../lib/GaletteActivities/PluginGaletteActivities.php:55
@@ -86,241 +238,134 @@ msgstr "Activités"
 msgid "Subscriptions"
 msgstr "Souscriptions"
 
-#. TRANS %membername will be replaced with current member name
-#: ../lib/GaletteActivities/PluginGaletteActivities.php:117
-msgid "New subscription for %membername"
-msgstr "Nouvelle souscription pour %membername"
-
-#: ../lib/GaletteActivities/Entity/Activity.php:182
-msgid "Name is mandatory"
-msgstr "Le nom est requis"
-
-#: ../lib/GaletteActivities/Entity/Activity.php:189
-msgid "Type is too long"
-msgstr "Le type est trop long"
-
-#: ../lib/GaletteActivities/Entity/Activity.php:267
-msgid "Activity added"
-msgstr "Activité ajoutée"
-
-#: ../lib/GaletteActivities/Entity/Activity.php:272
-msgid "Fail to add new activity."
-msgstr "Erreur à l'ajout de la nouvelle activité."
-
-#: ../lib/GaletteActivities/Entity/Activity.php:291
-msgid "Activity updated"
-msgstr "Activité mise à jour"
-
-#: ../lib/GaletteActivities/Entity/Activity.php:412
-#: ../tempcache/activities.html.twig:100
-msgid "Name"
-msgstr "Nom"
-
-#: ../lib/GaletteActivities/Entity/Activity.php:416
-#: ../tempcache/activities.html.twig:100 ../tempcache/activities.html.twig:167
-msgid "Type"
-msgstr "Type"
-
-#: ../lib/GaletteActivities/Entity/Activity.php:420
-#: ../tempcache/activities.html.twig:100 ../tempcache/activities.html.twig:173
-msgid "Price"
-msgstr "Prix"
-
-#: ../lib/GaletteActivities/Entity/Activity.php:424
-#: ../tempcache/activities.html.twig:100 ../tempcache/activities.html.twig:187
-msgid "Group"
-msgstr "Groupe"
-
-#: ../lib/GaletteActivities/Entity/Activity.php:428
-#: ../lib/GaletteActivities/Entity/Subscription.php:585
-#: ../tempcache/activities.html.twig:100 ../tempcache/activities.html.twig:181
-#: ../tempcache/subscription.html.twig:71
-msgid "Creation date"
-msgstr "Date de création"
-
-#: ../lib/GaletteActivities/Entity/Activity.php:432
-#: ../lib/GaletteActivities/Entity/Subscription.php:597
-#: ../tempcache/subscription.html.twig:121
-msgid "Comment"
-msgstr "Commentaire"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:189
-msgid "Activity is mandatory"
-msgstr "L'activité est requise"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:218
-msgid "Member is mandatory"
-msgstr "L'adhérent est requis"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:228
-msgid "Subscription date is mandatory"
-msgstr "La date de souscription est requise"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:234
-msgid "End date is mandatory"
-msgstr "La date de fin est requise"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:292
-msgid "Subscription added"
-msgstr "Souscription ajoutée"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:302
-msgid "Fail to add new subscription."
-msgstr "Erreur à l'ajout de la nouvelle souscription."
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:321
-msgid "Subscription updated"
-msgstr "Souscription mise à jour"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:330
-msgid "Subscription already exists for this member and activity"
-msgstr "Une souscription existe déjà pour cet adhérent et cette activité"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:569
-msgid "Member"
-msgstr "Adhérent"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:573
-msgid "Is paid"
-msgstr "Est payée"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:577
-#: ../tempcache/subscriptions.html.twig:103
-#: ../tempcache/subscriptions.html.twig:449
-#: ../tempcache/subscription.html.twig:138
-msgid "Amount"
-msgstr "Montant"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:581
-msgid "Payment method"
-msgstr "Méthode de paiement"
-
-#: ../lib/GaletteActivities/Entity/Subscription.php:589
-#: ../tempcache/subscriptions.html.twig:103
-#: ../tempcache/subscriptions.html.twig:433
-#: ../tempcache/subscription.html.twig:77
-msgid "Subscription date"
-msgstr "Date de souscription"
-
-#: ../tempcache/activities.html.twig:62
+#. TRANS: %1$s is the member name
+#: ../lib/GaletteActivities/PluginGaletteActivities.php:102
 #, php-format
-msgid "%1$s activity"
-msgid_plural "%1$s activities"
-msgstr[0] "%1$s activité"
-msgstr[1] "%1$s activités"
+msgid "New subscription for %1$s"
+msgstr "Nouvelle souscription pour %1$s"
 
-#: ../tempcache/activities.html.twig:87
-msgid "New activity"
-msgstr "Nouvelle activité"
-
-#: ../tempcache/activities.html.twig:196
-#, php-format
-msgid "%1$s: edit information"
-msgstr "%1$s : modifier les informations"
-
-#: ../tempcache/activities.html.twig:198
-#, php-format
-msgid "%1$s: remove from database"
-msgstr "%1$s : supprimer de la base de données"
-
-#: ../tempcache/activities.html.twig:234
-msgid "No activity has been found"
-msgstr "Aucune activité trouvée"
-
-#: ../tempcache/subscriptions.html.twig:65
+#: ../templates/default/subscriptions.html.twig:19
 #, php-format
 msgid "%1$s subscription"
 msgid_plural "%1$s subscriptions"
 msgstr[0] "%1$s souscription"
 msgstr[1] "%1$s souscriptions"
 
-#: ../tempcache/subscriptions.html.twig:90
+#: ../templates/default/subscriptions.html.twig:34
 msgid "New subscription"
 msgstr "Nouvelle souscription"
 
-#: ../tempcache/subscriptions.html.twig:103
-#: ../tempcache/subscriptions.html.twig:441
-#: ../tempcache/subscription.html.twig:83
+#: ../templates/default/subscriptions.html.twig:39
+#: ../templates/default/subscriptions.html.twig:200
+#: ../templates/default/subscription.html.twig:33
 msgid "End date"
 msgstr "Date de fin"
 
-#: ../tempcache/subscriptions.html.twig:103
-#: ../tempcache/subscriptions.html.twig:282
-#: ../tempcache/subscriptions.html.twig:458
-#: ../tempcache/subscriptions.html.twig:470
-#: ../tempcache/subscriptions.html.twig:481
-#: ../tempcache/subscription.html.twig:151
+#: ../templates/default/subscriptions.html.twig:39
+#: ../templates/default/subscriptions.html.twig:146
+#: ../templates/default/subscriptions.html.twig:202
+#: ../templates/default/subscriptions.html.twig:203
+#: ../templates/default/subscriptions.html.twig:206
+#: ../templates/default/subscription.html.twig:92
 msgid "Paid"
 msgstr "Payée"
 
-#: ../tempcache/subscriptions.html.twig:130
+#: ../templates/default/subscriptions.html.twig:78
 msgid "All activities"
 msgstr "Toutes les activités"
 
-#: ../tempcache/subscriptions.html.twig:159
+#: ../templates/default/subscriptions.html.twig:89
 msgid "Search or pick a member"
 msgstr "Chercher ou choisir un adhérent"
 
-#: ../tempcache/subscriptions.html.twig:167
+#: ../templates/default/subscriptions.html.twig:97
 msgid "All payment types"
 msgstr "Toutes les méthodes de paiement"
 
-#: ../tempcache/subscriptions.html.twig:175
+#: ../templates/default/subscriptions.html.twig:105
 msgid "Date type"
 msgstr "Type de date"
 
-#: ../tempcache/subscriptions.html.twig:186
+#: ../templates/default/subscriptions.html.twig:107
 msgid "Creation"
 msgstr "Création"
 
-#: ../tempcache/subscriptions.html.twig:252
+#: ../templates/default/subscriptions.html.twig:136
 msgid "Paid subscription:"
 msgstr "Souscription payée :"
 
-#: ../tempcache/subscriptions.html.twig:298
-#: ../tempcache/subscriptions.html.twig:460
-#: ../tempcache/subscriptions.html.twig:472
-#: ../tempcache/subscriptions.html.twig:487
+#: ../templates/default/subscriptions.html.twig:152
+#: ../templates/default/subscriptions.html.twig:203
+#: ../templates/default/subscriptions.html.twig:208
 msgid "Not paid"
 msgstr "Non payée"
 
-#: ../tempcache/subscriptions.html.twig:350
+#: ../templates/default/subscriptions.html.twig:177
 #, php-format
-msgid "Found subscriptions total %f"
-msgstr "Total des souscriptions trouvées : %f"
+msgid "Found subscriptions total %1$s"
+msgstr "Total des souscriptions trouvées : %1$s"
 
-#: ../tempcache/subscriptions.html.twig:506
+#: ../templates/default/subscriptions.html.twig:215
 msgid "Edit subscription"
 msgstr "Modifier la souscription"
 
-#: ../tempcache/subscriptions.html.twig:518
+#: ../templates/default/subscriptions.html.twig:229
 msgid "Remove from database"
 msgstr "Supprimer de la base de données"
 
-#: ../tempcache/subscriptions.html.twig:548
+#: ../templates/default/subscriptions.html.twig:248
 msgid "No subscription has been found"
 msgstr "Aucune souscription trouvée"
 
-#: ../tempcache/activity.html.twig:64
-msgid "General information"
-msgstr "Informations générales"
-
-#: ../tempcache/activity.html.twig:124
-msgid "Attach to group"
-msgstr "Attacher au groupe"
-
-#: ../tempcache/activity.html.twig:124
-msgid "Group to attach members that subscribes to activity."
-msgstr "Groupe auquel attacher les adhérents qui souscrivent à l'activité."
-
-#: ../tempcache/subscription.html.twig:64
+#: ../templates/default/subscription.html.twig:14
 msgid "Subscription information"
 msgstr "Informations de souscription"
 
-#: ../tempcache/subscription.html.twig:88
+#: ../templates/default/subscription.html.twig:38
 msgid "Select an activity"
 msgstr "Sélectionnez une activité"
 
-#: ../tempcache/subscription.html.twig:131
+#: ../templates/default/subscription.html.twig:70
 msgid "Financial information"
 msgstr "Informations financières"
+
+#: ../templates/default/activity.html.twig:14
+msgid "General information"
+msgstr "Informations générales"
+
+#: ../templates/default/activity.html.twig:49
+msgid "Attach to group"
+msgstr "Attacher au groupe"
+
+#: ../templates/default/activity.html.twig:49
+msgid "Subscribed members join this group, and are never removed from it."
+msgstr ""
+"Les adhérents inscrits rejoignent ce groupe et n'en sont jamais retirés."
+
+#: ../templates/default/activities.html.twig:19
+#, php-format
+msgid "%1$s activity"
+msgid_plural "%1$s activities"
+msgstr[0] "%1$s activité"
+msgstr[1] "%1$s activités"
+
+#: ../templates/default/activities.html.twig:34
+msgid "New activity"
+msgstr "Nouvelle activité"
+
+#: ../templates/default/activities.html.twig:71
+#, php-format
+msgid "%1$s: edit information"
+msgstr "%1$s : modifier les informations"
+
+#: ../templates/default/activities.html.twig:76
+#, php-format
+msgid "%1$s: remove from database"
+msgstr "%1$s : supprimer de la base de données"
+
+#: ../templates/default/activities.html.twig:98
+msgid "No activity has been found"
+msgstr "Aucune activité trouvée"
+
+#~ msgid "Group to attach members that subscribes to activity."
+#~ msgstr "Groupe auquel attacher les adhérents qui souscrivent à l'activité."

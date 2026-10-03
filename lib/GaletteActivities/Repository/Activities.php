@@ -1,22 +1,9 @@
 <?php
 
 /**
- * Copyright © 2003-2025 The Galette Team
- *
- * This file is part of Galette (https://galette.eu).
- *
- * Galette is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Galette is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Galette. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of Galette Activities plugin (https://galette.eu).
+ * SPDX-FileCopyrightText: Copyright © 2024-2026 The Galette Team
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 declare(strict_types=1);
@@ -24,59 +11,57 @@ declare(strict_types=1);
 namespace GaletteActivities\Repository;
 
 use Analog\Analog;
-use Galette\Repository\Repository;
-use GaletteActivities\Entity\Activity;
-use Galette\Core\Preferences;
-use GaletteActivities\Filters\ActivitiesList;
-use Laminas\Db\ResultSet\ResultSet;
-use Laminas\Db\Sql\Expression;
-use Galette\Core\Login;
 use Galette\Core\Db;
-use Laminas\Db\Sql\Select;
+use Galette\Core\History;
+use Galette\Core\Login;
+use Galette\Core\Preferences;
+use GaletteActivities\Entity\Activity;
+use GaletteActivities\Filters\ActivitiesList;
 
 /**
  * Activities
  *
  * @author Johan Cwiklinski <johan@x-tnd.be>
  */
-class Activities extends Repository
+class Activities extends AbstractRepository
 {
-    private int $count;
+    protected const string PK = Activity::PK;
+    protected const string ALIAS = 'ac';
 
-    public const ORDERBY_DATE = 0;
-    public const ORDERBY_NAME = 1;
+    /** @var ActivitiesList */
+    protected \Galette\Core\Pagination $filters;
+
+    public const int ORDERBY_DATE = 0;
+    public const int ORDERBY_NAME = 1;
 
     /**
      * Constructor
      *
      * @param Db              $zdb         Database instance
      * @param Login           $login       Login instance
+     * @param History         $history     History instance
      * @param Preferences     $preferences Preferences instance
      * @param ?ActivitiesList $filters     Filtering
      */
-    public function __construct(Db $zdb, Login $login, Preferences $preferences, ?ActivitiesList $filters = null)
-    {
-        $this->zdb = $zdb;
-        $this->login = $login;
-
-        parent::__construct($zdb, $preferences, $login, 'Entity\Activity', 'GaletteActivities', ACTIVITIES_PREFIX);
-
-        if ($filters === null) {
-            $this->filters = new ActivitiesList();
-        } else {
-            $this->filters = $filters;
-        }
+    public function __construct(
+        Db $zdb,
+        Login $login,
+        History $history,
+        Preferences $preferences,
+        ?ActivitiesList $filters = null
+    ) {
+        parent::__construct($zdb, $login, $history, $preferences, 'Entity\Activity', $filters ?? new ActivitiesList());
     }
 
     /**
      * Get activities list
      *
-     * @return array<int, Activity>|ResultSet
+     * @return array<int, Activity>
      */
-    public function getList(): array|ResultSet
+    public function getList(): array
     {
         try {
-            $select = $this->zdb->select(ACTIVITIES_PREFIX . Activity::TABLE, 'ac');
+            $select = $this->zdb->select(ACTIVITIES_PREFIX . Activity::TABLE, self::ALIAS);
             $select->order($this->buildOrderClause());
 
             $this->proceedCount($select);
@@ -86,8 +71,7 @@ class Activities extends Repository
 
             $activities = [];
             foreach ($results as $row) {
-                $activity = new Activity($this->zdb, $row);
-                $activities[] = $activity;
+                $activities[] = new Activity($this->zdb, $this->history, $row);
             }
 
             return $activities;
@@ -103,105 +87,21 @@ class Activities extends Repository
     /**
      * Builds the order clause
      *
-     * @param ?array $fields Fields list to ensure ORDER clause
-     *                       references selected fields. Optional.
-     *
      * @return array<string> SQL ORDER clauses
      */
-    private function buildOrderClause(?array $fields = null): array
+    private function buildOrderClause(): array
     {
         $order = [];
 
         switch ($this->filters->orderby) {
             case self::ORDERBY_DATE:
-                if ($this->canOrderBy('creation_date', $fields)) {
-                    $order[] = 'creation_date ' . $this->filters->getDirection();
-                }
+                $order[] = 'creation_date ' . $this->filters->getDirection();
                 break;
             case self::ORDERBY_NAME:
-                if ($this->canOrderBy('name', $fields)) {
-                    $order[] = 'name ' . $this->filters->getDirection();
-                }
+                $order[] = 'name ' . $this->filters->getDirection();
                 break;
         }
 
         return $order;
-    }
-
-    /**
-     * Count activities from the query
-     *
-     * @param Select $select Original select
-     *
-     * @return void
-     */
-    private function proceedCount(Select $select): void
-    {
-        try {
-            $countSelect = clone $select;
-            $countSelect->reset($countSelect::COLUMNS);
-            $countSelect->reset($countSelect::ORDER);
-            $countSelect->reset($countSelect::HAVING);
-            $joins = $countSelect->joins;
-            $countSelect->reset($countSelect::JOINS);
-            foreach ($joins as $join) {
-                $countSelect->join(
-                    $join['name'],
-                    $join['on'],
-                    [],
-                    $join['type']
-                );
-                unset($join['columns']);
-            }
-
-            $countSelect->columns(
-                [
-                    'count' => new Expression('count(DISTINCT ac.' . Activity::PK . ')')
-                ]
-            );
-
-            $have = $select->having;
-            if ($have->count() > 0) {
-                foreach ($have->getPredicates() as $h) {
-                    $countSelect->where($h);
-                }
-            }
-
-            $results = $this->zdb->execute($countSelect);
-
-            $this->count = (int)$results->current()->count;
-            if (isset($this->filters) && $this->count > 0) {
-                $this->filters->setCounter($this->count);
-            }
-        } catch (\Exception $e) {
-            Analog::log(
-                'Cannot count activities | ' . $e->getMessage(),
-                Analog::WARNING
-            );
-            throw $e;
-        }
-    }
-
-    /**
-     * Get count for current query
-     *
-     * @return int
-     */
-    public function getCount(): int
-    {
-        return $this->count;
-    }
-
-    /**
-     * Add default activities in database
-     *
-     * @param boolean $check_first Check first if it seems initialized
-     *
-     * @return boolean
-     */
-    public function installInit(bool $check_first = true): bool
-    {
-        //to satisfy inheritance
-        return true;
     }
 }

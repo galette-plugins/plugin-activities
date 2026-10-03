@@ -1,23 +1,9 @@
 {#
-/**
- * Copyright © 2003-2024 The Galette Team
- *
- * This file is part of Galette (https://galette.eu).
- *
- * Galette is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Galette is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Galette. If not, see <http://www.gnu.org/licenses/>.
- */
-#}
+ # This file is part of Galette Activities plugin (https://galette.eu).
+ # SPDX-FileCopyrightText: Copyright © 2024-2026 The Galette Team
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+
 {% extends 'elements/list.html.twig' %}
 {% import "macros.twig" as macros %}
 
@@ -31,7 +17,10 @@
 
 {% block infoline %}
     {% set infoline = {
-        'label': _Tn("%1$s activity", "%1$s activities", nb, "activities")|replace({"%1$s": nb})
+        'label': _Tn("%1$s activity", "%1$s activities", nb, "activities")|replace({"%1$s": nb}),
+        'route': {
+            'name': 'activities_filter-activitieslist'
+        }
     } %}
     {{ parent() }}
 {% endblock %}
@@ -75,8 +64,8 @@
                 <a href="{{ url_for("activities_activity_edit", {"id": aid}) }}">{{ activity.getName() }}</a>
             </td>
             <td data-col-label="{{ _T("Type", "activities") }}">{{ activity.getType() }}</td>
-            <td data-col-label="{{ _T("Price", "activities") }}">{% if activity.getPrice() %}{{ activity.getPrice()|number_format(2) }}{% endif %}</td>
-            <td class="collapsing" data-col-label="{{ _T("Creation date", "activities") }}">{{ activity.getCreationDate() }}</td>
+            <td data-col-label="{{ _T("Price", "activities") }}">{% if activity.getPrice() is not null %}{{ activity.getPrice()|number_format(2) }}{% endif %}</td>
+            <td class="collapsing" data-col-label="{{ _T("Creation date", "activities") }}">{{ activity.getCreationDate()|date(_T("Y-m-d")) }}</td>
             <td data-col-label="{{ _T("Group", "activities") }}">{%  if activity.getGroup() %}{{ activity.getGroup().getFullName() }}{% endif %}</td>
             <td class="center actions_row collapsing">
                 {% set actions = [

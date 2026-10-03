@@ -1,0 +1,382 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: translations@galette.eu\n"
+"POT-Creation-Date: 2026-09-30 08:32+0200\n"
+"PO-Revision-Date: 2026-10-01 18:52+0000\n"
+"Last-Translator: Jože Felicijan <joze@felicijan.com>\n"
+"Language-Team: Slovenian <https://hosted.weblate.org/projects/galette/"
+"plugins-activities/sl/>\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
+"n%100==4 ? 2 : 3;\n"
+"X-Generator: Weblate 2026.10\n"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:112
+msgid "Activity is mandatory"
+msgstr "Aktivnost je obvezna"
+
+#. TRANS: %1$s is the activity ID
+#: ../lib/GaletteActivities/Entity/Subscription.php:119
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:57
+#, php-format
+msgid "No activity #%1$s."
+msgstr "Ni aktivnosti #%1$s."
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:141
+msgid "Amount must be a number."
+msgstr ""
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:161
+msgid "Member is mandatory"
+msgstr "Članstvo je obvezno"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:177
+msgid "Subscription date is mandatory"
+msgstr "Datum naročnine je obvezen"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:183
+msgid "End date is mandatory"
+msgstr "Končni datum je obvezen"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:192
+msgid "End date must not be before subscription date."
+msgstr ""
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:196
+msgid "Subscription already exists for this member and activity"
+msgstr "Naročnina za tega člana in dejavnost že obstaja"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:248
+msgid "Fail to add new subscription."
+msgstr "Dodajanje nove naročnine ni uspelo."
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:257
+msgid "Subscription added"
+msgstr "Dodana naročnina"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:273
+msgid "Subscription updated"
+msgstr "Naročnina posodobljena"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:507
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:142
+#: ../templates/default/subscriptions.html.twig:39
+#: ../templates/default/subscriptions.html.twig:76
+#: ../templates/default/subscription.html.twig:46
+msgid "Activity"
+msgstr "Dejavnost"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:511
+msgid "Member"
+msgstr "Član"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:515
+msgid "Is paid"
+msgstr "Je plačano"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:519
+#: ../templates/default/subscriptions.html.twig:39
+#: ../templates/default/subscriptions.html.twig:201
+#: ../templates/default/subscription.html.twig:75
+msgid "Amount"
+msgstr "Znesek"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:523
+msgid "Payment method"
+msgstr "Način plačila"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:527
+#: ../lib/GaletteActivities/Entity/Activity.php:316
+#: ../templates/default/subscription.html.twig:19
+#: ../templates/default/activities.html.twig:39
+#: ../templates/default/activities.html.twig:68
+msgid "Creation date"
+msgstr "Datum vpisa"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:531
+#: ../templates/default/subscriptions.html.twig:39
+#: ../templates/default/subscriptions.html.twig:199
+#: ../templates/default/subscription.html.twig:26
+msgid "Subscription date"
+msgstr "Datum naročnine"
+
+#: ../lib/GaletteActivities/Entity/Subscription.php:539
+#: ../lib/GaletteActivities/Entity/Activity.php:320
+#: ../templates/default/subscription.html.twig:61
+msgid "Comment"
+msgstr "Komentar"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:97
+msgid "Name is mandatory"
+msgstr "Ime je obvezno"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:99
+#, fuzzy
+#| msgid "Type is too long"
+msgid "Name is too long"
+msgstr "Vrsta je predolga"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:106
+msgid "Type is too long"
+msgstr "Vrsta je predolga"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:121
+msgid "Price must be a number."
+msgstr ""
+
+#: ../lib/GaletteActivities/Entity/Activity.php:171
+msgid "Fail to add new activity."
+msgstr "Dodajanje nove dejavnosti ni uspelo."
+
+#: ../lib/GaletteActivities/Entity/Activity.php:180
+msgid "Activity added"
+msgstr "Dejavnost je bila dodana"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:196
+msgid "Activity updated"
+msgstr "Dejavnost posodobljena"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:300
+#: ../templates/default/activities.html.twig:39
+msgid "Name"
+msgstr "Ime"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:304
+#: ../templates/default/activities.html.twig:39
+#: ../templates/default/activities.html.twig:66
+msgid "Type"
+msgstr "Vrsta"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:308
+#: ../templates/default/activities.html.twig:39
+#: ../templates/default/activities.html.twig:67
+msgid "Price"
+msgstr "Cena"
+
+#: ../lib/GaletteActivities/Entity/Activity.php:312
+#: ../templates/default/activities.html.twig:39
+#: ../templates/default/activities.html.twig:69
+msgid "Group"
+msgstr "Skupina"
+
+#. TRANS: %1$s is the subscription ID
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:60
+#, php-format
+msgid "No subscription #%1$s."
+msgstr "Nova naročnina za %1$s."
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:131
+msgid "Subscriptions management"
+msgstr "Upravljanje naročnin"
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:210
+#: ../templates/default/subscriptions.html.twig:109
+msgid "Subscription"
+msgstr "Naročnina"
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:289
+msgid "Do not forget to store the subscription"
+msgstr "Ne pozabite shraniti naročnine"
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:298
+msgid "New subscription has been successfully added."
+msgstr "Nova naročnina je bila uspešno dodana."
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:299
+msgid "Subscription has been modified."
+msgstr "Naročnina je bila spremenjena."
+
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:300
+msgid "An error occurred while storing the subscription."
+msgstr "Pri shranjevanju naročnine je prišlo do napake."
+
+#. TRANS: %1$s is the member name, %2$s the activity name.
+#: ../lib/GaletteActivities/Controllers/Crud/SubscriptionsController.php:383
+#, php-format
+msgid "Remove subscription for %1$s on %2$s"
+msgstr "Odstrani naročnino za %1$s na %2$s"
+
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:104
+msgid "Activities management"
+msgstr "Vodenje dejavnosti"
+
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:191
+msgid "New activity has been successfully added."
+msgstr "Nova dejavnost je bila uspešno dodana."
+
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:192
+msgid "Activity has been modified."
+msgstr "Dejavnost je bila spremenjena."
+
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:193
+msgid "An error occurred while storing the activity."
+msgstr "Pri shranjevanju dejavnosti je prišlo do napake."
+
+#. TRANS %1$s is activity name
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:258
+#, php-format
+msgid "Remove activity %1$s"
+msgstr "Odstrani dejavnost %1$s"
+
+#. TRANS: %1$s is the number of subscriptions
+#: ../lib/GaletteActivities/Controllers/Crud/ActivitiesController.php:281
+#, php-format
+msgid "%1$s subscription to this activity will be removed as well."
+msgid_plural "%1$s subscriptions to this activity will be removed as well."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
+
+#: ../lib/GaletteActivities/PluginGaletteActivities.php:51
+#: ../lib/GaletteActivities/PluginGaletteActivities.php:55
+msgid "Activities"
+msgstr "Dejavnosti"
+
+#: ../lib/GaletteActivities/PluginGaletteActivities.php:62
+msgid "Subscriptions"
+msgstr "Naročnine"
+
+#. TRANS: %1$s is the member name
+#: ../lib/GaletteActivities/PluginGaletteActivities.php:102
+#, php-format
+msgid "New subscription for %1$s"
+msgstr "Nova naročnina za %1$s"
+
+#: ../templates/default/subscriptions.html.twig:19
+#, php-format
+msgid "%1$s subscription"
+msgid_plural "%1$s subscriptions"
+msgstr[0] "Naročnina %1$s"
+msgstr[1] "%1$s naročninini"
+msgstr[2] "%1$s naročnin"
+msgstr[3] "%1$s naročnine"
+
+#: ../templates/default/subscriptions.html.twig:34
+msgid "New subscription"
+msgstr "Nova naročnina"
+
+#: ../templates/default/subscriptions.html.twig:39
+#: ../templates/default/subscriptions.html.twig:200
+#: ../templates/default/subscription.html.twig:33
+msgid "End date"
+msgstr "Končni datum"
+
+#: ../templates/default/subscriptions.html.twig:39
+#: ../templates/default/subscriptions.html.twig:146
+#: ../templates/default/subscriptions.html.twig:202
+#: ../templates/default/subscriptions.html.twig:203
+#: ../templates/default/subscriptions.html.twig:206
+#: ../templates/default/subscription.html.twig:92
+msgid "Paid"
+msgstr "Plačano"
+
+#: ../templates/default/subscriptions.html.twig:78
+msgid "All activities"
+msgstr "Vse dejavnosti"
+
+#: ../templates/default/subscriptions.html.twig:89
+msgid "Search or pick a member"
+msgstr "Išči ali izberi člana"
+
+#: ../templates/default/subscriptions.html.twig:97
+msgid "All payment types"
+msgstr "Vse vrste plačil"
+
+#: ../templates/default/subscriptions.html.twig:105
+msgid "Date type"
+msgstr "Vrsta datuma"
+
+#: ../templates/default/subscriptions.html.twig:107
+msgid "Creation"
+msgstr "Ustvarjanje"
+
+#: ../templates/default/subscriptions.html.twig:136
+msgid "Paid subscription:"
+msgstr "Plačljiva naročnina:"
+
+#: ../templates/default/subscriptions.html.twig:152
+#: ../templates/default/subscriptions.html.twig:203
+#: ../templates/default/subscriptions.html.twig:208
+msgid "Not paid"
+msgstr "Ni plačano"
+
+#: ../templates/default/subscriptions.html.twig:177
+#, php-format
+msgid "Found subscriptions total %1$s"
+msgstr "Najdenih naročnin skupaj %1$s"
+
+#: ../templates/default/subscriptions.html.twig:215
+msgid "Edit subscription"
+msgstr "Uredi naročnino"
+
+#: ../templates/default/subscriptions.html.twig:229
+msgid "Remove from database"
+msgstr "Odstrani iz baze podatkov"
+
+#: ../templates/default/subscriptions.html.twig:248
+msgid "No subscription has been found"
+msgstr "Naročnina ni bila najdena"
+
+#: ../templates/default/subscription.html.twig:14
+msgid "Subscription information"
+msgstr "Informacije o naročnini"
+
+#: ../templates/default/subscription.html.twig:38
+msgid "Select an activity"
+msgstr "Izberite dejavnost"
+
+#: ../templates/default/subscription.html.twig:70
+msgid "Financial information"
+msgstr "Finančne informacije"
+
+#: ../templates/default/activity.html.twig:14
+msgid "General information"
+msgstr "Splošne informacije"
+
+#: ../templates/default/activity.html.twig:49
+msgid "Attach to group"
+msgstr "Pripni skupini"
+
+#: ../templates/default/activity.html.twig:49
+msgid "Subscribed members join this group, and are never removed from it."
+msgstr ""
+
+#: ../templates/default/activities.html.twig:19
+#, php-format
+msgid "%1$s activity"
+msgid_plural "%1$s activities"
+msgstr[0] "%1$s aktivnost"
+msgstr[1] "%1$s aktivnosti"
+msgstr[2] "%1$s dejavnosti"
+msgstr[3] "%1$s dejavnosti"
+
+#: ../templates/default/activities.html.twig:34
+msgid "New activity"
+msgstr "Nova dejavnost"
+
+#: ../templates/default/activities.html.twig:71
+#, php-format
+msgid "%1$s: edit information"
+msgstr "%1$s: uredi podatke"
+
+#: ../templates/default/activities.html.twig:76
+#, php-format
+msgid "%1$s: remove from database"
+msgstr "%1$s: odstrani iz zbirke podatkov"
+
+#: ../templates/default/activities.html.twig:98
+msgid "No activity has been found"
+msgstr "Ni najdene nobene aktivnosti"
+
+#~ msgid "Group to attach members that subscribes to activity."
+#~ msgstr "Skupina za pripenjanje članov, ki so naročeni na dejavnost."

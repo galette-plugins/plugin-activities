@@ -1,29 +1,17 @@
 <?php
 
 /**
- * Copyright © 2003-2025 The Galette Team
- *
- * This file is part of Galette (https://galette.eu).
- *
- * Galette is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Galette is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Galette. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of Galette Activities plugin (https://galette.eu).
+ * SPDX-FileCopyrightText: Copyright © 2024-2026 The Galette Team
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 declare(strict_types=1);
 
 namespace GaletteActivities\tests\units;
 
-use Galette\GaletteTestCase;
+use Galette\Tests\GaletteTestCase;
+use GaletteActivities\tests\ActivitiesFixtures;
 
 /**
  * Activity tests
@@ -32,16 +20,18 @@ use Galette\GaletteTestCase;
  */
 class Activity extends GaletteTestCase
 {
+    use ActivitiesFixtures;
+
     protected int $seed = 20240817102541;
 
     /**
      * Cleanup after each test method
-     *
-     * @return void
      */
     public function tearDown(): void
     {
-        $delete = $this->zdb->delete(ACTIVITIES_PREFIX . \GaletteActivities\Entity\Activity::TABLE);
+        $this->cleanActivities();
+
+        $delete = $this->zdb->delete(\Galette\Entity\Group::GROUPSUSERS_TABLE);
         $this->zdb->execute($delete);
 
         $delete = $this->zdb->delete(\Galette\Entity\Group::TABLE);
@@ -52,12 +42,10 @@ class Activity extends GaletteTestCase
 
     /**
      * Test empty
-     *
-     * @return void
      */
     public function testEmpty(): void
     {
-        $activity = new \GaletteActivities\Entity\Activity($this->zdb);
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history);
 
         $this->assertNull($activity->getId());
         $this->assertSame('', $activity->getName());
@@ -68,13 +56,11 @@ class Activity extends GaletteTestCase
 
     /**
      * Test add and update
-     *
-     * @return void
      */
     public function testCrud(): void
     {
-        $activity = new \GaletteActivities\Entity\Activity($this->zdb);
-        $activities = new \GaletteActivities\Repository\Activities($this->zdb, $this->login, $this->preferences);
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history);
+        $activities = new \GaletteActivities\Repository\Activities($this->zdb, $this->login, $this->history, $this->preferences);
 
         //ensure the table is empty
         $this->assertCount(0, $activities->getList());
@@ -86,7 +72,7 @@ class Activity extends GaletteTestCase
         $this->assertFalse($activity->check($data));
         $this->assertSame(['Name is mandatory'], $activity->getErrors());
         $this->expectLogEntry(
-            \Analog::ERROR,
+            \Analog\Analog::ERROR,
             'Name is mandatory'
         );
 
@@ -99,7 +85,7 @@ class Activity extends GaletteTestCase
         $this->assertFalse($activity->check($data));
         $this->assertSame(['Type is too long'], $activity->getErrors());
         $this->expectLogEntry(
-            \Analog::ERROR,
+            \Analog\Analog::ERROR,
             'Type is too long'
         );
 
@@ -110,11 +96,11 @@ class Activity extends GaletteTestCase
             'type' => 'one'
         ];
         $this->assertTrue($activity->check($data));
-        $this->assertTrue($activity->store());
+        $activity->store();
         $first_id = $activity->getId();
         $this->assertGreaterThan(0, $first_id);
 
-        $this->assertTrue($activity->load($first_id));
+        $activity->load($first_id);
         $this->assertSame('Test activity', $activity->getName());
         $this->assertSame('Test comment', $activity->getComment());
         $this->assertSame('one', $activity->getType());
@@ -135,8 +121,8 @@ class Activity extends GaletteTestCase
         $data['price'] = 10.5;
         $data['comment'] = '';
         $this->assertTrue($activity->check($data));
-        $this->assertTrue($activity->store());
-        $this->assertTrue($activity->load($first_id));
+        $activity->store();
+        $activity->load($first_id);
 
         $this->assertSame('Test activity edited', $activity->getName());
         $this->assertSame(10.5, $activity->getPrice());
@@ -144,28 +130,95 @@ class Activity extends GaletteTestCase
 
         $group = new \Galette\Entity\Group();
         $group->setName('Test group' . $this->seed);
-        $this->assertTrue($group->store());
+        $group->store();
         $data['id_group'] = $group->getId();
         $this->assertTrue($activity->check($data));
-        $this->assertTrue($activity->store());
-        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $first_id);
+        $activity->store();
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history, $first_id);
 
         $this->assertInstanceOf(\Galette\Entity\Group::class, $activity->getGroup());
         $this->assertSame($group->getId(), $activity->getGroup()->getId());
 
         //remove activity
-        $this->assertTrue($activity->remove());
-        $this->assertFalse($activity->load($first_id));
+        $activity->remove();
+        $this->assertNotFound(fn() => $activity->load($first_id));
     }
 
     /**
      * Test load error
-     *
-     * @return void
      */
     public function testLoadError(): void
     {
-        $activity = new \GaletteActivities\Entity\Activity($this->zdb);
-        $this->assertFalse($activity->load(999));
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history);
+        $this->expectException(\GaletteActivities\NotFoundException::class);
+        $activity->load(999);
+    }
+
+    /**
+     * Assert activity data is refused
+     *
+     * @param array<string,mixed> $data   Activity data
+     * @param array<string>       $errors Expected errors
+     */
+    private function expectInvalid(array $data, array $errors): void
+    {
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history);
+        $this->assertFalse($activity->check($data));
+        $this->assertSame($errors, $activity->getErrors());
+        $this->expectLogEntry(\Analog\Analog::ERROR, 'Error(s) checking activity before store');
+    }
+
+    /**
+     * Names are limited to database length, types counted in characters
+     */
+    public function testCheckLengths(): void
+    {
+        $this->expectInvalid(['name' => str_repeat('a', 151)], ['Name is too long']);
+
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history);
+        $this->assertTrue($activity->check(['name' => str_repeat('é', 150), 'type' => 'Éàü']));
+        $activity->store();
+        $activity->load((int)$activity->getId());
+        $this->assertSame(str_repeat('é', 150), $activity->getName());
+        $this->assertSame('Éàü', $activity->getType());
+    }
+
+    /**
+     * Prices accept comma decimal separator and zero, and can be cleared
+     */
+    public function testCheckPrice(): void
+    {
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history);
+        $this->assertTrue($activity->check(['name' => 'Climbing', 'price' => '12,50']));
+        $this->assertSame(12.5, $activity->getPrice());
+
+        $this->assertTrue($activity->check(['name' => 'Climbing', 'price' => '0']));
+        $this->assertSame(0.0, $activity->getPrice());
+
+        $this->assertTrue($activity->check(['name' => 'Climbing', 'price' => '']));
+        $this->assertNull($activity->getPrice());
+
+        $this->expectInvalid(['name' => 'Climbing', 'price' => 'twelve'], ['Price must be a number.']);
+    }
+
+    /**
+     * Subscriptions are removed with their activity, members stay in the group
+     */
+    public function testRemoveCascades(): void
+    {
+        $member_one = $this->getMemberOne();
+        $group = $this->createGroup('Activity group', [], [$member_one]);
+        $climbing = $this->insertActivity('Climbing', $group->getId());
+        $hiking = $this->insertActivity('Hiking');
+        $this->insertSubscription($climbing, $member_one->id);
+        $this->insertSubscription($hiking, $member_one->id);
+
+        $activity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history, $climbing);
+        $this->assertSame($group->getId(), $activity->getGroup()?->getId());
+        $activity->remove();
+
+        $this->assertSame(0, $this->countSubscriptions($climbing));
+        $this->assertSame(1, $this->countSubscriptions($hiking));
+        $this->assertTrue($this->isInGroup($group->getId(), $member_one->id));
     }
 }

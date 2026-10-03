@@ -1,23 +1,9 @@
 {#
-/**
- * Copyright © 2003-2024 The Galette Team
- *
- * This file is part of Galette (https://galette.eu).
- *
- * Galette is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Galette is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Galette. If not, see <http://www.gnu.org/licenses/>.
- */
-#}
+ # This file is part of Galette Activities plugin (https://galette.eu).
+ # SPDX-FileCopyrightText: Copyright © 2024-2026 The Galette Team
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+
 {% extends 'elements/list.html.twig' %}
 {% import "macros.twig" as macros %}
 
@@ -97,7 +83,6 @@
             </div>
             <div class="field">
                 {% include 'components/forms/member_dropdown.html.twig' with {
-                    'required': true,
                     'component_id': 'member_filter_elt',
                     'id': 'member_filter',
                     'label': _T("Member"),
@@ -172,7 +157,7 @@
 
             <div class="ui right aligned basic fitted segment field flexend">
                 <button type="submit"  class="tooltip action ui labeled icon primary button" title="{{ _T('Apply filters') }}" name="filter">
-                    <i class="search icon"></i>
+                    <i class="search icon" aria-hidden="true"></i>
                     {{ _T('Filter') }}
                 </button>
                 <button type="submit" name="clear_filter" class="ui labeled icon button tooltip" title="{{ _T('Reset all filters to defaults') }}">
@@ -181,7 +166,6 @@
                 </button>
             </div>
         </div>
-        {% include "components/forms/csrf.html.twig" %}
     </div>
     </form>
 {% endblock %}
@@ -190,7 +174,7 @@
     {% if nb > 0 %}
     <tr>
         <td class="right" colspan="10">
-            {{ _T("Found subscriptions total %f", "activities")|replace({'%f': subscriptions.getSum()}) }}
+            {{ _T("Found subscriptions total %1$s", "activities")|format(subscriptions.getSum()|number_format(2)) }}
         </td>
     </tr>
     {% endif %}
@@ -205,9 +189,6 @@
                     </td>
                     <td class="{{ rclass }} username_row" data-scope="row">
                         {% set bid = subscription.getId() %}
-                        <span class="ui checkbox">
-                            <input type="checkbox" name="entries_sel[]" value="{{ bid }}"/>
-                        </span>
                         <a href="{{ url_for("activities_activity_edit", {"id": subscription.getActivityId()}) }}">{{ subscription.getActivity().getName() }}</a>
                     </td>
                     <td class="{{ rclass }}" data-col-label="{{ _T("Member") }}">
@@ -215,22 +196,22 @@
                             {{ subscription.getMember().sfullname }}
                         </a>
                     </td>
-                    <td class="{{ rclass }} collapsing" data-col-label="{{ _T("Subscription date", "activities") }}">{{ subscription.getSubscriptionDate() }}</td>
-                    <td class="{{ rclass }} collapsing" data-col-label="{{ _T("End date", "activities") }}">{{ subscription.getEndDate() }}</td>
-                    <td class="{{ rclass }}" data-col-label="{{ _T("Amount", "activities") }}">{{ subscription.getAmount() }}</td>
+                    <td class="{{ rclass }} collapsing" data-col-label="{{ _T("Subscription date", "activities") }}">{{ subscription.getSubscriptionDate()|date(_T("Y-m-d")) }}</td>
+                    <td class="{{ rclass }} collapsing" data-col-label="{{ _T("End date", "activities") }}">{{ subscription.getEndDate()|date(_T("Y-m-d")) }}</td>
+                    <td class="{{ rclass }}" data-col-label="{{ _T("Amount", "activities") }}">{% if subscription.getAmount() is not null %}{{ subscription.getAmount()|number_format(2) }}{% endif %}</td>
                     <td class="{{ rclass }} center collapsing" data-col-label="{{ _T("Paid", "activities") }}">
-                        <i class="money bill wave{% if not subscription.isPaid() %} red{% endif %} icon tooltip" data-html="{% if subscription.isPaid() %}{{ _T("Paid", "activities") }}{% else %}{{ _T("Not paid", "activities") }}{% endif %}"></i>
+                        <i class="money bill wave{% if not subscription.isPaid() %} red{% endif %} icon tooltip" data-html="{% if subscription.isPaid() %}{{ _T("Paid", "activities") }}{% else %}{{ _T("Not paid", "activities") }}{% endif %}" aria-hidden="true"></i>
                         <span class="visually-hidden">
                         {% if subscription.isPaid() %}
                             {{ _T("Paid", "activities") }}
                         {% else %}
-                            {{ _T("Not paid", "activities") }}"
+                            {{ _T("Not paid", "activities") }}
                         {% endif %}
                         </span>
                     </td>
                     <td class="{{ rclass }} center actions_row collapsing">
             {% set actions = [] %}
-            {% if login.isAdmin() or login.isStaff() or (login.isGroupManager() and subscription.getActivity().getGroup() in login.managed_groups) %}
+            {% if login.isAdmin() or login.isStaff() %}
                 {% set actions = (actions ?? [])|merge([
                     {
                         'label': _T("Edit subscription", "activities"),
@@ -269,6 +250,7 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script type="text/javascript">
         {% include "elements/js/choose_adh.js.twig" with {"js_chosen_id": "#member_filter"} %}
     </script>
