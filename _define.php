@@ -16,7 +16,7 @@ $this->register(
     version: '1.2.0',              //Version
     compver: '1.3.0',              //Galette compatible version
     route: 'activities',           //routing name and translation domain
-    date: '2026-09-30',            //Release date
+    date: '2026-10-03',            //Release date
     acls: [                        //Permissions needed
         '/activities_.*/'           => 'staff'
     ],
