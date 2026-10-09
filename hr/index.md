@@ -1,31 +1,32 @@
 ---
-title: Galette Activities
-description: Activities management
+title: Galette aktivnosti
+description: Upravljanje aktivnostima
 ---
 
-A [Galette](https://galette.eu) plugin to manage activities and the
-subscriptions members take on them.
+Dodatak za [Galette](https://galette.eu) za upravljanje aktivnostima i prijavama
+članova na njih.
 
-This plugin was developed for [Association
-l'Aphyllanthe](https://www.aphyllanthe.fr/). It provides:
+Dodatak je razvijen za [Association l'Aphyllanthe](https://www.aphyllanthe.fr/).
+Omogućuje:
 
-* activities management,
-* subscriptions management.
+* upravljanje aktivnostima,
+* upravljanje prijavama.
 
-* [documentation](documentation.html)
-* [bugs and
-  features](https://github.com/galette-plugins/plugin-activities/issues)
-* [source code](https://github.com/galette-plugins/plugin-activities)
-* mailing lists:
-  [users](https://lists.mailman3.com/postorius/lists/galette-users.mailman3.com/),
-  [developers](https://lists.mailman3.com/postorius/lists/galette-devel.mailman3.com/)
+* [dokumentacija](documentation.html)
+* [pogreške i nove
+  funkcije](https://github.com/galette-plugins/plugin-activities/issues)
+* [izvorni kod](https://github.com/galette-plugins/plugin-activities)
+* popisi za e-poštu:
+  [korisnici](https://lists.mailman3.com/postorius/lists/galette-users.mailman3.com/),
+  [razvojni
+  tim](https://lists.mailman3.com/postorius/lists/galette-devel.mailman3.com/)
 
-To use it you need a recent enough Galette — the required version is shown at
-the top of this page — and the plugin itself, either by:
+Potrebna je dovoljno nova verzija Galettea; tražena verzija navedena je na vrhu
+stranice. Sam dodatak možete nabaviti:
 
-* downloading it with the buttons at the top of this page,
-* or using the [source code from the
-  repository](https://github.com/galette-plugins/plugin-activities), which
-  requires some technical skills.
+* preuzimanjem putem gumba na vrhu stranice,
+* ili uporabom [izvornog koda iz
+  repozitorija](https://github.com/galette-plugins/plugin-activities), za što je
+  potrebno tehničko znanje.
 
-See the [documentation](documentation.html) for the installation steps.
+Upute za instalaciju potražite u [dokumentaciji](documentation.html).
