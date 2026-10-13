@@ -1,25 +1,25 @@
 ---
-title: Documentation
-description: Activities management
+title: Dokumentacija
+description: Upravljanje aktivnostima
 ---
 
-This plugin was developed for [Association
-l'Aphyllanthe](https://www.aphyllanthe.fr/). It provides:
+Dodatak je razvijen za [Association l'Aphyllanthe](https://www.aphyllanthe.fr/).
+Omogućuje:
 
-* activities management,
-* subscriptions management.
+* upravljanje aktivnostima,
+* upravljanje prijavama.
 
-## Installation
+## Instalacija
 
-First of all, download the plugin:
+Najprije preuzmite dodatak:
 
-* [Get latest Activities
-  plugin!](https://github.com/galette-plugins/plugin-activities/releases/latest)
-* [Get Activities plugin nightly
-  build!](https://github.com/galette-plugins/plugin-activities/releases/tag/nightly)
+* [Preuzmite najnoviji dodatak
+  Activities!](https://github.com/galette-plugins/plugin-activities/releases/latest)
+* [Preuzmite noćnu razvojnu verziju dodatka
+  Activities!](https://github.com/galette-plugins/plugin-activities/releases/tag/nightly)
 
-Extract the downloaded archive in Galette `plugins` directory. For example,
-under linux (replacing `{url}` and `{version}` with correct values):
+Raspakirajte preuzetu arhivu u Galetteovu mapu `plugins`. Primjerice, na Linuxu
+(zamijenite `{url}` i `{version}` odgovarajućim vrijednostima):
 
 ```bash
 $ cd /var/www/html/galette/plugins
@@ -27,10 +27,10 @@ $ wget {url}
 $ tar xjvf galette-plugin-activities-{version}.tar.bz2
 ```
 
-## Database initialisation
+## Inicijalizacija baze podataka
 
-In order to work, this plugin requires several tables in the database. See
-[Galette plugins management
-interface](https://doc.galette.eu/en/master/plugins/index.html#plugins-managment).
+Dodatak zahtijeva nekoliko tablica u bazi. Pogledajte [sučelje za upravljanje
+dodacima
+Galettea](https://doc.galette.eu/en/master/plugins/index.html#plugins-managment).
 
-And this is finished; Activities plugin is installed :)
+Gotovo; dodatak Activities je instaliran :)
