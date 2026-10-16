@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: translations@galette.eu\n"
 "POT-Creation-Date: 2026-09-30 08:32+0200\n"
-"PO-Revision-Date: 2026-10-13 08:41+0000\n"
+"PO-Revision-Date: 2026-10-17 11:51+0000\n"
 "Last-Translator: Marko Puljic "
 "<markopuljic.uo@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Croatian <https://hosted.weblate.org/projects/galette/plugins-"
@@ -146,7 +146,7 @@ msgstr "Aktivnost je ažurirana"
 #: ../lib/GaletteActivities/Entity/Activity.php:300
 #: ../templates/default/activities.html.twig:39
 msgid "Name"
-msgstr "Naziv"
+msgstr "Prezime"
 
 #: ../lib/GaletteActivities/Entity/Activity.php:304
 #: ../templates/default/activities.html.twig:39 ../templates/default/activities.html.twig:66
