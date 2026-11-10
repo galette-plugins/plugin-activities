@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: translations@galette.eu\n"
 "POT-Creation-Date: 2026-09-30 08:32+0200\n"
-"PO-Revision-Date: 2026-10-01 18:52+0000\n"
+"PO-Revision-Date: 2026-10-03 12:34+0000\n"
 "Last-Translator: Jože Felicijan <joze@felicijan.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/galette/"
 "plugins-activities/sl/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
 "n%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 2026.10\n"
+"X-Generator: Weblate 2026.10.1.dev0\n"
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:112
 msgid "Activity is mandatory"
@@ -33,7 +33,7 @@ msgstr "Ni aktivnosti #%1$s."
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:141
 msgid "Amount must be a number."
-msgstr ""
+msgstr "Znesek mora biti številka."
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:161
 msgid "Member is mandatory"
@@ -49,7 +49,7 @@ msgstr "Končni datum je obvezen"
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:192
 msgid "End date must not be before subscription date."
-msgstr ""
+msgstr "Končni datum ne sme biti pred datumom naročnine."
 
 #: ../lib/GaletteActivities/Entity/Subscription.php:196
 msgid "Subscription already exists for this member and activity"
@@ -120,10 +120,8 @@ msgid "Name is mandatory"
 msgstr "Ime je obvezno"
 
 #: ../lib/GaletteActivities/Entity/Activity.php:99
-#, fuzzy
-#| msgid "Type is too long"
 msgid "Name is too long"
-msgstr "Vrsta je predolga"
+msgstr "Ime je predolgo"
 
 #: ../lib/GaletteActivities/Entity/Activity.php:106
 msgid "Type is too long"
@@ -131,7 +129,7 @@ msgstr "Vrsta je predolga"
 
 #: ../lib/GaletteActivities/Entity/Activity.php:121
 msgid "Price must be a number."
-msgstr ""
+msgstr "Cena mora biti številka."
 
 #: ../lib/GaletteActivities/Entity/Activity.php:171
 msgid "Fail to add new activity."
@@ -232,10 +230,10 @@ msgstr "Odstrani dejavnost %1$s"
 #, php-format
 msgid "%1$s subscription to this activity will be removed as well."
 msgid_plural "%1$s subscriptions to this activity will be removed as well."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Odstranjena bo tudi naročnina %1$s na to dejavnost."
+msgstr[1] "Odstranjena bo tudi naročnina %1$s na ti dejavnosti."
+msgstr[2] "Odstranjena bo tudi naročnina %1$s na ti dejavnosti."
+msgstr[3] "Odstranjena bo tudi naročnina %1$s na ti dejavnosti."
 
 #: ../lib/GaletteActivities/PluginGaletteActivities.php:51
 #: ../lib/GaletteActivities/PluginGaletteActivities.php:55
@@ -350,6 +348,7 @@ msgstr "Pripni skupini"
 #: ../templates/default/activity.html.twig:49
 msgid "Subscribed members join this group, and are never removed from it."
 msgstr ""
+"Naročeni člani se pridružijo tej skupini in niso nikoli odstranjeni iz nje."
 
 #: ../templates/default/activities.html.twig:19
 #, php-format
