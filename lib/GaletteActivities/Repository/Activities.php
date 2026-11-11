@@ -50,7 +50,14 @@ class Activities extends AbstractRepository
         Preferences $preferences,
         ?ActivitiesList $filters = null
     ) {
-        parent::__construct($zdb, $login, $history, $preferences, 'Entity\Activity', $filters ?? new ActivitiesList());
+        parent::__construct(
+            zdb: $zdb,
+            login: $login,
+            history: $history,
+            preferences: $preferences,
+            entity: 'Entity\Activity',
+            filters: $filters ?? new ActivitiesList()
+        );
     }
 
     /**

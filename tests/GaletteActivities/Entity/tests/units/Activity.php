@@ -60,7 +60,12 @@ class Activity extends GaletteTestCase
     public function testCrud(): void
     {
         $activity = new \GaletteActivities\Entity\Activity($this->zdb, $this->history);
-        $activities = new \GaletteActivities\Repository\Activities($this->zdb, $this->login, $this->history, $this->preferences);
+        $activities = new \GaletteActivities\Repository\Activities(
+            zdb: $this->zdb,
+            login: $this->login,
+            history: $this->history,
+            preferences: $this->preferences
+        );
 
         //ensure the table is empty
         $this->assertCount(0, $activities->getList());

@@ -32,9 +32,6 @@ class Subscription
 
     public const string TABLE = 'subscriptions';
     public const string PK = 'id_subscription';
-
-    private Db $zdb;
-    private History $history;
     /** @var array<string> */
     private array $errors = [];
 
@@ -63,10 +60,8 @@ class Subscription
      *                                                     a specific subscription, or null to just
      *                                                     instanciate object
      */
-    public function __construct(Db $zdb, History $history, int|ArrayObject|null $args = null)
+    public function __construct(private Db $zdb, private History $history, int|ArrayObject|null $args = null)
     {
-        $this->zdb = $zdb;
-        $this->history = $history;
         $this->setFields();
 
         $this->creation_date = date("Y-m-d");
@@ -199,7 +194,7 @@ class Subscription
         if (count($this->errors) > 0) {
             Analog::log(
                 'Some errors has been threw attempting to edit/store a subscription' . "\n"
-                . print_r($this->errors, true),
+                . print_r($this->errors, return: true),
                 Analog::ERROR
             );
             return false;
@@ -388,7 +383,7 @@ class Subscription
             return null;
         }
         if ($this->member?->id !== $this->id_member) {
-            $this->member = new Adherent($this->zdb, $this->id_member, false);
+            $this->member = new Adherent($this->zdb, $this->id_member, deps: false);
         }
         return $this->member;
     }

@@ -66,7 +66,7 @@ class ActivitiesController extends AbstractController
      */
     public function add(Request $request, Response $response): Response
     {
-        return $this->edit($request, $response, null, 'add');
+        return $this->edit(request: $request, response: $response, id: null, action: 'add');
     }
 
     /**
@@ -74,7 +74,7 @@ class ActivitiesController extends AbstractController
      */
     public function doAdd(Request $request, Response $response): Response
     {
-        return $this->doEdit($request, $response, null, 'add');
+        return $this->doEdit(request: $request, response: $response, id: null, action: 'add');
     }
 
     // /CRUD - Create
@@ -89,11 +89,17 @@ class ActivitiesController extends AbstractController
     public function list(Request $request, Response $response, ?string $option = null, string|int|null $value = null): Response
     {
         $filters = $this->getFilters($option, $value);
-        $activities = new Activities($this->zdb, $this->login, $this->history, $this->preferences, $filters);
+        $activities = new Activities(
+            zdb: $this->zdb,
+            login: $this->login,
+            history: $this->history,
+            preferences: $this->preferences,
+            filters: $filters
+        );
         $list = $activities->getList();
 
         //assign pagination variables to the template and add pagination links
-        $filters->setViewPagination($this->routeparser, $this->view, false);
+        $filters->setViewPagination($this->routeparser, $this->view, restricted: false);
         $this->storeFilters($filters);
 
         // display page
@@ -187,12 +193,12 @@ class ActivitiesController extends AbstractController
         $errors = [];
         if ($activity->check($post)) {
             $this->storeEntity(
-                $activity,
-                _T("New activity has been successfully added.", "activities"),
-                _T("Activity has been modified.", "activities"),
-                _T("An error occurred while storing the activity.", "activities"),
-                $successes,
-                $errors
+                entity: $activity,
+                added: _T("New activity has been successfully added.", "activities"),
+                modified: _T("Activity has been modified.", "activities"),
+                failed: _T("An error occurred while storing the activity.", "activities"),
+                successes: $successes,
+                errors: $errors
             );
         } else {
             $errors = $activity->getErrors();
@@ -278,10 +284,10 @@ class ActivitiesController extends AbstractController
             $params['message'] = sprintf(
                 _Tn(
                     //TRANS: %1$s is the number of subscriptions
-                    '%1$s subscription to this activity will be removed as well.',
-                    '%1$s subscriptions to this activity will be removed as well.',
-                    $count,
-                    'activities'
+                    singular: '%1$s subscription to this activity will be removed as well.',
+                    plural: '%1$s subscriptions to this activity will be removed as well.',
+                    count: $count,
+                    domain: 'activities'
                 ),
                 $count
             );

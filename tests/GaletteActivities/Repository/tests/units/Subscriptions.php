@@ -43,7 +43,13 @@ class Subscriptions extends GaletteTestCase
      */
     private function getListIds(SubscriptionsList $filters): array
     {
-        $subscriptions = new \GaletteActivities\Repository\Subscriptions($this->zdb, $this->login, $this->history, $this->preferences, $filters);
+        $subscriptions = new \GaletteActivities\Repository\Subscriptions(
+            zdb: $this->zdb,
+            login: $this->login,
+            history: $this->history,
+            preferences: $this->preferences,
+            filters: $filters
+        );
         $ids = [];
         foreach ($subscriptions->getList() as $subscription) {
             $ids[] = $subscription->getId();
@@ -58,8 +64,8 @@ class Subscriptions extends GaletteTestCase
     {
         $activity = $this->insertActivity(
             'Climbing',
-            null,
-            ['comment' => 'Activity comment', 'creation_date' => '2020-01-01']
+            id_group: null,
+            data: ['comment' => 'Activity comment', 'creation_date' => '2020-01-01']
         );
         $this->insertSubscription(
             $activity,
@@ -67,7 +73,12 @@ class Subscriptions extends GaletteTestCase
             ['comment' => 'Subscription comment', 'creation_date' => '2026-01-15']
         );
 
-        $subscriptions = new \GaletteActivities\Repository\Subscriptions($this->zdb, $this->login, $this->history, $this->preferences);
+        $subscriptions = new \GaletteActivities\Repository\Subscriptions(
+            zdb: $this->zdb,
+            login: $this->login,
+            history: $this->history,
+            preferences: $this->preferences
+        );
         $list = $subscriptions->getList();
         $this->assertCount(1, $list);
         $this->assertSame('Subscription comment', $list[0]->getComment());
@@ -85,7 +96,12 @@ class Subscriptions extends GaletteTestCase
         $this->insertSubscription($climbing, $this->getMemberTwo()->id, ['end_date' => '2026-01-01']);
         $this->insertSubscription($this->insertActivity('Hiking'), $member_one->id, ['end_date' => '2025-01-01']);
 
-        $list = (new \GaletteActivities\Repository\Subscriptions($this->zdb, $this->login, $this->history, $this->preferences))->getList();
+        $list = (new \GaletteActivities\Repository\Subscriptions(
+            zdb: $this->zdb,
+            login: $this->login,
+            history: $this->history,
+            preferences: $this->preferences
+        ))->getList();
         $this->assertCount(3, $list);
         $this->assertSame('Climbing', $list[0]->getActivity()?->getName());
         $this->assertSame($list[0]->getActivity(), $list[0]->getActivity());
@@ -128,7 +144,13 @@ class Subscriptions extends GaletteTestCase
         $filters = new SubscriptionsList();
         $filters->paid_filter = \GaletteActivities\Repository\Subscriptions::FILTER_PAID;
         $this->assertSame([$paid_two, $paid_one], $this->getListIds($filters));
-        $subscriptions = new \GaletteActivities\Repository\Subscriptions($this->zdb, $this->login, $this->history, $this->preferences, $filters);
+        $subscriptions = new \GaletteActivities\Repository\Subscriptions(
+            zdb: $this->zdb,
+            login: $this->login,
+            history: $this->history,
+            preferences: $this->preferences,
+            filters: $filters
+        );
         $subscriptions->getList();
         $this->assertSame(15.5, $subscriptions->getSum());
 
@@ -170,7 +192,13 @@ class Subscriptions extends GaletteTestCase
 
         $filters->activity_filter = $climbing;
         $this->assertSame([$second, $first], $this->getListIds($filters));
-        $subscriptions = new \GaletteActivities\Repository\Subscriptions($this->zdb, $this->login, $this->history, $this->preferences, $filters);
+        $subscriptions = new \GaletteActivities\Repository\Subscriptions(
+            zdb: $this->zdb,
+            login: $this->login,
+            history: $this->history,
+            preferences: $this->preferences,
+            filters: $filters
+        );
         $subscriptions->getList();
         $this->assertSame(2, $subscriptions->getCount());
 

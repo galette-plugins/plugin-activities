@@ -169,8 +169,8 @@ class ActivitiesController extends GaletteRoutingTestCase
         $this->logSuperAdmin();
         $group = $this->createGroup('Climbers');
         $this->insertActivity('Climbing', $group->getId(), ['price' => 12.5]);
-        $this->insertActivity('Hiking', null, ['price' => null]);
-        $this->insertActivity('Diving', null, ['price' => 0]);
+        $this->insertActivity('Hiking', id_group: null, data: ['price' => null]);
+        $this->insertActivity('Diving', id_group: null, data: ['price' => 0]);
 
         $test_response = $this->app->handle($this->createRequest('activities_activities'));
         $this->assertSame(200, $test_response->getStatusCode());

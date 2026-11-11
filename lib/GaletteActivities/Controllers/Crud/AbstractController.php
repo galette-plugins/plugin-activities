@@ -78,7 +78,7 @@ abstract class AbstractController extends AbstractPluginController
      */
     protected function getFilters(?string $option = null, string|int|null $value = null): Pagination
     {
-        $filters = $this->session->{$this->getFilterName($this->getDefaultFilterName())} ?? $this->createFilters();
+        $filters = $this->session->{$this->getFilterName(static::getDefaultFilterName())} ?? $this->createFilters();
 
         switch ($option) {
             case 'page':
@@ -99,7 +99,7 @@ abstract class AbstractController extends AbstractPluginController
      */
     protected function storeFilters(Pagination $filters): void
     {
-        $this->session->{$this->getFilterName($this->getDefaultFilterName())} = $filters;
+        $this->session->{$this->getFilterName(static::getDefaultFilterName())} = $filters;
     }
 
     /**
@@ -227,7 +227,13 @@ abstract class AbstractController extends AbstractPluginController
         array $warnings = [],
         array $errors = []
     ): Response {
-        return parent::redirect($response, $redirect_url, $successes, $warnings, $errors)
+        return parent::redirect(
+            response: $response,
+            redirect_url: $redirect_url,
+            successes: $successes,
+            warnings: $warnings,
+            errors: $errors
+        )
             ->withStatus(303);
     }
 }
