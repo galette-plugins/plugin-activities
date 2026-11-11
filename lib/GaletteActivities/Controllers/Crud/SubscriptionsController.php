@@ -71,7 +71,7 @@ class SubscriptionsController extends AbstractController
      */
     public function add(Request $request, Response $response, ?int $id_adh = null): Response
     {
-        return $this->edit($request, $response, null, 'add', $id_adh);
+        return $this->edit(request: $request, response: $response, id: null, action: 'add', id_adh: $id_adh);
     }
 
     /**
@@ -79,7 +79,7 @@ class SubscriptionsController extends AbstractController
      */
     public function doAdd(Request $request, Response $response): Response
     {
-        return $this->doEdit($request, $response, null, 'add');
+        return $this->doEdit(request: $request, response: $response, id: null, action: 'add');
     }
 
     // /CRUD - Create
@@ -104,14 +104,25 @@ class SubscriptionsController extends AbstractController
             }
         }
 
-        $subscriptions = new Subscriptions($this->zdb, $this->login, $this->history, $this->preferences, $filters);
+        $subscriptions = new Subscriptions(
+            zdb: $this->zdb,
+            login: $this->login,
+            history: $this->history,
+            preferences: $this->preferences,
+            filters: $filters
+        );
 
-        $activities = new Activities($this->zdb, $this->login, $this->history, $this->preferences);
+        $activities = new Activities(
+            zdb: $this->zdb,
+            login: $this->login,
+            history: $this->history,
+            preferences: $this->preferences
+        );
         $list = $subscriptions->getList();
         $count = $subscriptions->getCount();
 
         //assign pagination variables to the template and add pagination links
-        $filters->setViewPagination($this->routeparser, $this->view, false);
+        $filters->setViewPagination($this->routeparser, $this->view, restricted: false);
 
         $this->storeFilters($filters);
 
@@ -215,7 +226,12 @@ class SubscriptionsController extends AbstractController
         }
 
         //Activities
-        $activities = new Activities($this->zdb, $this->login, $this->history, $this->preferences);
+        $activities = new Activities(
+            zdb: $this->zdb,
+            login: $this->login,
+            history: $this->history,
+            preferences: $this->preferences
+        );
 
         // members
         $m = new Members();
@@ -231,7 +247,7 @@ class SubscriptionsController extends AbstractController
             $subscription->getMemberId() > 0
             && !isset($members[$subscription->getMemberId()])
         ) {
-            $members[$subscription->getMemberId()] = Adherent::getSName($this->zdb, $subscription->getMemberId(), true);
+            $members[$subscription->getMemberId()] = Adherent::getSName($this->zdb, $subscription->getMemberId(), wid: true);
         }
 
         if (count($members)) {
@@ -294,12 +310,12 @@ class SubscriptionsController extends AbstractController
         $errors = [];
         if ($subscription->check($post)) {
             $this->storeEntity(
-                $subscription,
-                _T("New subscription has been successfully added.", "activities"),
-                _T("Subscription has been modified.", "activities"),
-                _T("An error occurred while storing the subscription.", "activities"),
-                $successes,
-                $errors
+                entity: $subscription,
+                added: _T("New subscription has been successfully added.", "activities"),
+                modified: _T("Subscription has been modified.", "activities"),
+                failed: _T("An error occurred while storing the subscription.", "activities"),
+                successes: $successes,
+                errors: $errors
             );
         } else {
             $errors = $subscription->getErrors();

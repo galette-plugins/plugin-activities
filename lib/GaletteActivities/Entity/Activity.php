@@ -30,9 +30,6 @@ class Activity
 
     public const string TABLE = 'activities';
     public const string PK = 'id_activity';
-
-    private Db $zdb;
-    private History $history;
     /** @var array<string> */
     private array $errors = [];
 
@@ -54,10 +51,8 @@ class Activity
      *                                                     a specific activity, or null to just
      *                                                     instanciate object
      */
-    public function __construct(Db $zdb, History $history, int|ArrayObject|null $args = null)
+    public function __construct(private Db $zdb, private History $history, int|ArrayObject|null $args = null)
     {
-        $this->zdb = $zdb;
-        $this->history = $history;
         $this->setFields();
 
         if (is_int($args)) {
@@ -136,7 +131,7 @@ class Activity
         if (count($this->errors) > 0) {
             Analog::log(
                 'Error(s) checking activity before store:' . "\n"
-                . print_r($this->errors, true),
+                . print_r($this->errors, return: true),
                 Analog::ERROR
             );
             return false;

@@ -43,7 +43,13 @@ class Activities extends GaletteTestCase
      */
     private function getListNames(ActivitiesList $filters): array
     {
-        $activities = new \GaletteActivities\Repository\Activities($this->zdb, $this->login, $this->history, $this->preferences, $filters);
+        $activities = new \GaletteActivities\Repository\Activities(
+            zdb: $this->zdb,
+            login: $this->login,
+            history: $this->history,
+            preferences: $this->preferences,
+            filters: $filters
+        );
         $names = [];
         foreach ($activities->getList() as $activity) {
             $names[] = $activity->getName();
@@ -57,9 +63,9 @@ class Activities extends GaletteTestCase
      */
     public function testList(): void
     {
-        $this->insertActivity('Climbing', null, ['creation_date' => '2026-01-01']);
-        $this->insertActivity('Diving', null, ['creation_date' => '2026-03-01']);
-        $this->insertActivity('Hiking', null, ['creation_date' => '2026-02-01']);
+        $this->insertActivity('Climbing', id_group: null, data: ['creation_date' => '2026-01-01']);
+        $this->insertActivity('Diving', id_group: null, data: ['creation_date' => '2026-03-01']);
+        $this->insertActivity('Hiking', id_group: null, data: ['creation_date' => '2026-02-01']);
 
         //newest first
         $filters = new ActivitiesList();

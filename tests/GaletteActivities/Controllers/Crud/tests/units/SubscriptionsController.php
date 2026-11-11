@@ -305,7 +305,7 @@ class SubscriptionsController extends GaletteRoutingTestCase
     {
         $this->logSuperAdmin();
         $member_one = $this->getMemberOne();
-        $activity = $this->insertActivity('Climbing', null, ['price' => 12.5]);
+        $activity = $this->insertActivity('Climbing', id_group: null, data: ['price' => 12.5]);
 
         $test_response = $this->app->handle($this->createRequest('activities_subscription_add', ['id_adh' => (string)$member_one->id]));
         $this->assertSame(200, $test_response->getStatusCode());

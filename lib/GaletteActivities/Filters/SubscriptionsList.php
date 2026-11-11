@@ -133,7 +133,7 @@ class SubscriptionsList extends Pagination
                     case 'rend_date_filter':
                         //same as above, but raw format
                         $rname = substr($name, 1);
-                        return $this->getDate($rname, true, false);
+                        return $this->getDate($rname, formatted: true, translated: false);
                     default:
                         return $this->$name;
                 }
@@ -143,7 +143,7 @@ class SubscriptionsList extends Pagination
         throw new \RuntimeException(
             sprintf(
                 'Unable to get property "%s::%s"!',
-                __CLASS__,
+                self::class,
                 $name
             )
         );
@@ -195,7 +195,7 @@ class SubscriptionsList extends Pagination
                     throw new \RuntimeException(
                         sprintf(
                             'Unable to set property "%s::%s"!',
-                            __CLASS__,
+                            self::class,
                             $name
                         )
                     );

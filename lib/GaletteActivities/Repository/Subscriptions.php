@@ -65,12 +65,12 @@ class Subscriptions extends AbstractRepository
         ?SubscriptionsList $filters = null
     ) {
         parent::__construct(
-            $zdb,
-            $login,
-            $history,
-            $preferences,
-            'Entity\Subscription',
-            $filters ?? new SubscriptionsList()
+            zdb: $zdb,
+            login: $login,
+            history: $history,
+            preferences: $preferences,
+            entity: 'Entity\Subscription',
+            filters: $filters ?? new SubscriptionsList()
         );
     }
 
@@ -156,7 +156,7 @@ class Subscriptions extends AbstractRepository
         )->where(['a.' . Adherent::PK => array_values($ids)]);
         $members = [];
         foreach ($this->zdb->execute($select) as $row) {
-            $members[(int)$row[Adherent::PK]] = new Adherent($this->zdb, $row, false);
+            $members[(int)$row[Adherent::PK]] = new Adherent($this->zdb, $row, deps: false);
         }
 
         foreach ($subscriptions as $subscription) {
@@ -242,18 +242,11 @@ class Subscriptions extends AbstractRepository
                 );
             }
 
-            switch ($this->filters->date_field) {
-                case SubscriptionsList::DATE_CREATION:
-                    $field = 's.creation_date';
-                    break;
-                case SubscriptionsList::DATE_SUBSCRIPTION:
-                    $field = 's.subscription_date';
-                    break;
-                case SubscriptionsList::DATE_END:
-                default:
-                    $field = 's.end_date';
-                    break;
-            }
+            $field = match ($this->filters->date_field) {
+                SubscriptionsList::DATE_CREATION => 's.creation_date',
+                SubscriptionsList::DATE_SUBSCRIPTION => 's.subscription_date',
+                default => 's.end_date',
+            };
 
             if ($this->filters->start_date_filter != null) {
                 $d = new \DateTime($this->filters->rstart_date_filter);
